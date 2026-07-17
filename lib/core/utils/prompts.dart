@@ -1,0 +1,57 @@
+import 'dart:convert';
+import 'package:flutter/services.dart' show rootBundle;
+
+/// A Bible verse, or a non-scripture prompt.
+class Prompt {
+  final String id;
+  final String ref; // e.g. "Psalm 46:10" or "prompt"
+  final String text;
+  final String translation; // "ESV" or "open"
+  const Prompt({
+    required this.id,
+    required this.ref,
+    required this.text,
+    required this.translation,
+  });
+  bool get isVerse => translation != 'open';
+}
+
+/// Loads a curated pool of verses and prompts, then picks one for today.
+/// Deterministic: the same calendar day yields the same prompt, so the user
+/// can return to a verse they remember.
+class PromptPicker {
+  static const _versesPath = 'assets/verses/verses.json';
+
+  static List<Prompt>? _cache;
+  static Future<List<Prompt>> _all() async {
+    if (_cache != null) return _cache!;
+    final raw = await rootBundle.loadString(_versesPath);
+    final data = json.decode(raw) as Map<String, dynamic>;
+    final list = (data['verses'] as List<dynamic>)
+        .cast<Map<String, dynamic>>()
+        .map((m) => Prompt(
+              id: m['id'] as String,
+              ref: m['ref'] as String,
+              text: m['text'] as String,
+              translation: m['translation'] as String,
+            ))
+        .toList();
+    _cache = list;
+    return list;
+  }
+
+  /// The prompt for today, deterministically chosen from the day's date key.
+  static Future<Prompt> today() async {
+    final verses = await _all();
+    final today = DateTime.now();
+    // Day-of-year + year hash → index. Same day always yields same verse.
+    final dayKey = today.year * 1000 + _dayOfYear(today);
+    final idx = dayKey % verses.length;
+    return verses[idx];
+  }
+
+  static int _dayOfYear(DateTime d) {
+    final start = DateTime(d.year, 1, 1);
+    return d.difference(start).inDays + 1;
+  }
+}

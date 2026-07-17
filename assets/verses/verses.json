@@ -1,0 +1,76 @@
+{
+  "verses": [
+    {
+      "id": "psalm-46-10",
+      "ref": "Psalm 46:10",
+      "text": "Be still, and know that I am God.",
+      "translation": "ESV"
+    },
+    {
+      "id": "psalm-55-22",
+      "ref": "Psalm 55:22",
+      "text": "Cast your burden on the Lord, and he will sustain you.",
+      "translation": "ESV"
+    },
+    {
+      "id": "philippians-4-6",
+      "ref": "Philippians 4:6",
+      "text": "Do not be anxious about anything, but in everything by prayer let your requests be made known to God.",
+      "translation": "ESV"
+    },
+    {
+      "id": "matthew-11-28",
+      "ref": "Matthew 11:28",
+      "text": "Come to me, all who labor and are heavy laden, and I will give you rest.",
+      "translation": "ESV"
+    },
+    {
+      "id": "isaiah-41-10",
+      "ref": "Isaiah 41:10",
+      "text": "Fear not, for I am with you; be not dismayed, for I am your God.",
+      "translation": "ESV"
+    },
+    {
+      "id": "psalm-23-4",
+      "ref": "Psalm 23:4",
+      "text": "Even though I walk through the valley of the shadow of death, I will fear no evil, for you are with me.",
+      "translation": "ESV"
+    },
+    {
+      "id": "jeremiah-29-12",
+      "ref": "Jeremiah 29:12",
+      "text": "Then you will call upon me and come and pray to me, and I will hear you.",
+      "translation": "ESV"
+    },
+    {
+      "id": "lamentations-3-22",
+      "ref": "Lamentations 3:22-23",
+      "text": "The steadfast love of the Lord never ceases; his mercies never come to an end; they are new every morning.",
+      "translation": "ESV"
+    },
+    {
+      "id": "psalm-27-14",
+      "ref": "Psalm 27:14",
+      "text": "Wait for the Lord; be strong, and let your heart take courage; wait for the Lord!",
+      "translation": "ESV"
+    },
+    {
+      "id": "1-thessalonians-5-16",
+      "ref": "1 Thessalonians 5:16-18",
+      "text": "Rejoice always, pray without ceasing, give thanks in all circumstances.",
+      "translation": "ESV"
+    },
+    {
+      "id": "john-14-27",
+      "ref": "John 14:27",
+      "text": "Peace I leave with you; my peace I give to you.",
+      "translation": "ESV"
+    },
+    {
+      "id": "psalm-119-105",
+      "ref": "Psalm 119:105",
+      "text": "Your word is a lamp to my feet and a light to my path.",
+      "translation": "ESV"
+    }
+  ]
+}
