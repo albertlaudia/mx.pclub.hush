@@ -1,10 +1,10 @@
-# prayer lock
+# lock.
 
-> A basic daily-prayer habit app. App block + prayer screen, day streak, home widget, daily check-in. Local-only MVP.
+> A daily practice, quietly.
 
-![prayer lock social preview](media/social-preview-1280x640.png)
+![lock. social preview](media/social-preview-1280x640.png)
 
-**Tagline:** *block your phone until you pray.*
+**The mark:** the word `lock.` in a distinctive warm serif (DM Serif Display), set in cream on deep teal, with a single small muted amber dot above the `o`. The wordmark is the icon. The dot is the only symbol.
 
 **Repo:** `albertlaudia/mx.pclub.lock`
 **Org prefix:** `mx.pclub.*` (pclub product family)
@@ -14,123 +14,111 @@
 
 ## What this is
 
-A **basic, working Prayer Lock-style app** — the iOS-first MVP that demonstrates the full UX from the reference screenshots. Local-only (no backend, no account, no subscription). The day streak, the mood check-in, the daily reminder, the home screen widget — all working, all local.
+A **minimal, working daily-practice app** — the v0.1 vertical slice. The product is the practice. One verse, one moment of attention, one quiet "done" tap. That's it.
 
-**This is the PBL counterpart to `mx.pclub.cadence`.** Cadence is built on the philosophy of *no points, no streaks, no gamification*. This app is built on the philosophy of *every point, every streak, every gamification cue*. The two are siblings, not the same product. Read `docs/BRAND.md` for the design tokens and `docs/VS-CADENCE.md` for the side-by-side comparison.
+**This is the deliberately-simpler sibling of `mx.pclub.cadence`.** Where Cadence ships a chapter mark, a Section, a composition, and an E2E-encrypted social layer, `lock.` ships **three screens and a settings page**. No streak counter. No home widget. No mood check-in. No notifications. No subscription. The minimal is the feature.
 
-## Features
+## The mark
 
-The MVP ships with the five core features from the reference design:
+![lock. app icon](media/icons/primary-1024.png)
 
-| # | Feature | What it does | Status |
-|---|---|---|---|
-| 1 | **App block + prayer screen** | Full-screen prayer view that the user sees when they "open the app to pray" | ✅ Working — simulated block (no real cross-app blocking) |
-| 2 | **Day streak counter** | Flame + day number, with weekly progress row (su mo tu we th fr sa) | ✅ Working — local persistence |
-| 3 | **Home screen widget** | iOS SwiftUI widget + Android AppWidgetProvider, shows current streak | ✅ Code written, requires Xcode/Gradle build step |
-| 4 | **Daily God check-in** | "How's your relationship with God today?" — slider 1-10, emoji shifts | ✅ Working |
-| 5 | **How are you feeling** | "How are you feeling today?" — slider 1-10, emoji shifts | ✅ Working |
+A wordmark in cream on deep teal, with a small amber dot above the `o`. A journal cover, not a streak counter.
 
-Plus: a 3-screen onboarding flow, daily notification reminder, deterministic-daily Bible verse from a curated pool of 12 verses.
+## The platform — minimal v0.1
+
+The MVP ships with **three screens and a settings page**:
+
+| Screen | What it does |
+|---|---|
+| **Onboarding** | A single screen. Pick a practice window (morning / midday / evening / anytime). One button. |
+| **Home** | "good morning." Today's practice — a verse, a prompt, a "begin" button. After completion, the home screen says "see you tomorrow." |
+| **Practice** | A full-screen verse. A moment of attention. A quiet "done" button. No timer. No countdown. No "you prayed for 1:32". |
+| **Settings** | Practice window, today status, total practices, version, reset. |
+
+That's the entire product.
 
 ## What this is NOT
 
-- **Not** a real cross-app blocker. The "block" is a simulated full-screen prayer view that the user opens themselves. Real cross-app blocking requires iOS FamilyControls (Apple approval) or Android AccessibilityService (high-risk permission). Both are out of scope for the basic MVP.
-- **Not** a backend. Everything is `shared_preferences` on the device.
-- **Not** a paid product. There is no subscription, no paywall, no IAP.
+- **Not** a streak counter. No flame. No "Day 47!". No "best ever".
+- **Not** a mood check-in. No "how are you feeling today?" slider.
+- **Not** a public widget. No home screen broadcast.
+- **Not** a cross-app blocker. No AccessibilityService. No iOS FamilyControls.
+- **Not** a notification engine. No daily reminder. (Yet.)
+- **Not** a social product. No Section. No leaderboard. No "share my streak".
+- **Not** a subscription. No paywall. No "PRO" tier. No "Restore your streak for $4.99".
 - **Not** a multi-locale product. English only. Add locales via `flutter_localizations` + `intl` ARB files.
+- **Not** a clone of anything. The mark, the colors, the copy, the UX — all genuinely ours. See `docs/BRAND.md` for the design tokens and `docs/VS-CADENCE.md` for the side-by-side with Cadence.
+
+## The brand
+
+- **Wordmark:** `lock.` in DM Serif Display, cream on deep teal
+- **Secondary mark:** a small dot inside a thin ring (for small contexts)
+- **Palette:** deep teal `#1F3D3A`, warm cream `#F5F0E6`, muted amber `#B89968`, ink `#1A1A1A`
+- **Type:** DM Serif Display (display) + Inter (body)
+- **Voice:** lowercase, no exclamation marks, no superlatives, no guilt copy
+- **Detail in `docs/BRAND.md`**
+
+The brand is not the Prayer Lock orange + padlock + cross. It is a journal cover. See `docs/BRAND.md` for what was explicitly rejected.
 
 ## Stack
 
 - **Flutter 3.27+** — single codebase, iOS + Android from the same `lib/`
 - **Riverpod 2.5+** — state management
 - **shared_preferences 2.3+** — local persistence
-- **flutter_local_notifications 17+** — daily reminder
-- **home_widget 0.6+** — iOS SwiftUI widget + Android AppWidgetProvider bridge
-- **google_fonts 6+** — Inter + DM Serif Display
+- **google_fonts 6+** — DM Serif Display + Inter
 - **intl 0.19+** — date formatting
-- **timezone 0.9+** — scheduled notification timezone support
+
+No backend. No Firebase. No notifications. No E2E encryption. The product is local-only.
 
 ## Repo layout
 
 ```
 mx.pclub.lock/
 ├── lib/                       Dart source
-│   ├── main.dart              app entry, ProviderScope, gate
+│   ├── main.dart              entry, gate, ProviderScope
 │   ├── core/
-│   │   ├── theme/             AppTheme + AppColors (orange/cream/green/blue)
-│   │   ├── storage/           StreakStore + Riverpod providers
-│   │   ├── notifications/     flutter_local_notifications wrapper
-│   │   ├── widget/            home_widget bridge
+│   │   ├── theme/             AppTheme (teal/cream/amber) + BrandMark
+│   │   ├── storage/           PracticeState + Riverpod provider
 │   │   └── utils/             date math + curated verse pool
 │   └── features/
-│       ├── onboarding/        3-screen first-launch flow
-│       ├── home/              streak display + week row + actions
-│       ├── prayer/            full-screen prayer view
-│       ├── checkin/           "how's your relationship with God today?"
-│       └── mood/              "how are you feeling today?"
+│       ├── onboarding/        1-screen first-launch
+│       ├── home/              today's practice card
+│       ├── practice/          the moment — full-screen verse
+│       └── settings/          window, today, total, reset
 ├── assets/verses/verses.json  12 curated ESV verses
-├── ios/
-│   ├── Runner/                main app target
-│   └── RunnerWidget/          home screen widget extension (SwiftUI)
-├── android/
-│   └── app/src/main/
-│       ├── AndroidManifest.xml
-│       ├── kotlin/mx/pclub/lock/
-│       │   ├── MainActivity.kt
-│       │   └── LockWidgetProvider.kt
-│       ├── res/layout/lock_widget.xml
-│       ├── res/xml/lock_widget_info.xml
-│       └── res/...
+├── ios/                       iOS Runner target (no widget extension)
+├── android/                   Android target (no widget receiver)
 ├── media/                     brand mark, full icon set, social preview
 ├── docs/                      BRAND.md, VS-CADENCE.md
+├── test/                      date math unit tests
 └── README.md
 ```
 
 ## How to run
 
 ```bash
-# 1. Install dependencies
 flutter pub get
-
-# 2. iOS
 cd ios && pod install && cd ..
-flutter run -d <ios-device>
-
-# 3. Android
-flutter run -d <android-device>
+flutter run -d <device>
 ```
 
-**iOS widget**: After `flutter build ios`, open `ios/Runner.xcworkspace` in Xcode, add the `RunnerWidget` target as a Widget Extension (File → New → Target → Widget Extension), set the bundle ID prefix to match the app group, and build.
+## What's planned for v0.2 (the "better platform")
 
-**Android widget**: Already wired. The `LockWidgetProvider` is declared in `AndroidManifest.xml`, the layout is in `res/layout/lock_widget.xml`, and the metadata is in `res/xml/lock_widget_info.xml`. Just build and add the widget from the home screen.
+The minimal v0.1 is the floor. Once 5-10 internal users have lived with it for 14 days, we add:
 
-## The mark
+- **A quiet day-count** (our way, not the PBL way — no flame, no public score, no shame)
+- **A home screen widget** (the secondary mark + day count)
+- **A daily notification** at the user's chosen window
+- **Multi-locale** (8 locales, three-layer parity, no surprise languages)
+- **Settings depth** (custom cadence, locale, sign out)
 
-![prayer lock app icon](media/icons/app-icon-1024.png)
-
-A white padlock with a small Christian cross carved into the body, on warm orange (`#FF8B27`). Matches the reference design. The orange is the brand; the cross is the audience. See [`media/`](media/) for the full asset set.
+These are added *after* the minimal is validated, not before. The minimal is the feature.
 
 ## Why this exists
 
-This is the **PBL counterpart** to `mx.pclub.cadence`. Where Cadence ships:
+This is the **deliberately-simpler sibling of `mx.pclub.cadence`**. Where Cadence ships the philosophy of "no PBL, no streaks, no gamification", `lock.` ships the practice, full stop. Same Flutter + Riverpod base. Same `mx.pclub.*` repo convention. Different product scope.
 
-- No streak counter
-- No mood check-in as engagement
-- No public scoreboard
-- No mandatory subscription
-- No gamification
-
-This app ships:
-
-- A 70-day flame streak
-- A "how's your relationship with God" daily check-in
-- A weekly progress row with day numbers
-- A home screen widget that shows the streak to the world
-- A "best 12 days" badge for shame-free reset
-
-**The same daily practice, framed two different ways.** Cadence is the *longer* bet — does engagement work without PBL? This app is the *shorter* bet — does PBL drive the metrics that matter to the business?
-
-If you ship both, you A/B-test the philosophy in the market. If you ship one, you bet on the philosophy. Read `docs/VS-CADENCE.md` for the full side-by-side.
+If you ship both, you A/B-test the philosophy in the market. If you ship `lock.` alone, you bet that the practice is the feature and the score is the noise. Read `docs/VS-CADENCE.md` for the full side-by-side.
 
 ## License
 
