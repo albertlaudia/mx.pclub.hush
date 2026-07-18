@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -18,6 +20,15 @@ class PracticeScreen extends ConsumerStatefulWidget {
 
 class _PracticeScreenState extends ConsumerState<PracticeScreen> {
   bool _done = false;
+  bool _completing = false;
+  Timer? _autoPopTimer;
+
+  @override
+  void dispose() {
+    _autoPopTimer?.cancel();
+    _autoPopTimer = null;
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -35,7 +46,8 @@ class _PracticeScreenState extends ConsumerState<PracticeScreen> {
                   BrandMark.wordmark(size: 16),
                   IconButton(
                     icon: const Icon(Icons.close, color: AppColors.mute),
-                    onPressed: () => Navigator.of(context).pop(),
+                    onPressed: _done ? null : () => Navigator.of(context).pop(),
+                    tooltip: 'close',
                   ),
                 ],
               ),
@@ -117,7 +129,8 @@ class _PracticeScreenState extends ConsumerState<PracticeScreen> {
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
-                    onPressed: _complete,
+                    // Disable while completing to prevent double-tap.
+                    onPressed: _completing ? null : _complete,
                     child: const Text('done'),
                   ),
                 ),
@@ -130,13 +143,29 @@ class _PracticeScreenState extends ConsumerState<PracticeScreen> {
   }
 
   Future<void> _complete() async {
-    await ref.read(practiceStateProvider.notifier).markPracticed();
-    if (!mounted) return;
-    setState(() => _done = true);
-    // Pop back to home after a brief moment so the user sees the
-    // "see you tomorrow" acknowledgment.
-    Future.delayed(const Duration(milliseconds: 1200), () {
-      if (mounted) Navigator.of(context).pop();
-    });
+    if (_completing) return;
+    setState(() => _completing = true);
+    try {
+      await ref.read(practiceStateProvider.notifier).markPracticed();
+      if (!mounted) return;
+      setState(() => _done = true);
+      // Pop back to home after a brief moment so the user sees the
+      // "see you tomorrow" acknowledgment. The timer is cancelled in
+      // dispose() so a manual pop never causes a dangling call.
+      _autoPopTimer = Timer(const Duration(milliseconds: 1200), () {
+        if (!mounted) return;
+        Navigator.of(context).pop();
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _completing = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text("couldn't save. try again."),
+          backgroundColor: AppColors.ink,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
   }
 }

@@ -20,9 +20,12 @@ class PracticeStateNotifier extends StateNotifier<PracticeState> {
     state = _store.read();
   }
 
-  Future<void> markPracticed() async {
-    await _store.markPracticed();
+  /// Returns true if the practice was newly recorded, false if it was
+  /// already counted today (idempotent).
+  Future<bool> markPracticed() async {
+    final changed = await _store.markPracticed();
     state = _store.read();
+    return changed;
   }
 
   Future<void> reset() async {

@@ -3,11 +3,14 @@ import '../utils/streak_math.dart';
 
 /// The user's chosen practice window. Drives the (future) notification
 /// schedule and the (future) time-of-day content shaping.
+///
+/// [unknown] is the initial state before the user picks a window. It is
+/// never persisted; [setWindow] rejects it.
 enum PracticeWindow { unknown, morning, midday, evening, anytime }
 
 /// Minimal local state for `lock.`:
-///   - the chosen practice window
 ///   - whether onboarding is complete
+///   - the chosen practice window
 ///   - whether today has been practiced
 ///   - the total number of practices
 ///
@@ -26,7 +29,12 @@ class PracticeState {
     required this.totalPractices,
   });
 
-  PracticeState copy() => this;
+  static const empty = PracticeState(
+    onboarded: false,
+    window: PracticeWindow.unknown,
+    practicedToday: false,
+    totalPractices: 0,
+  );
 }
 
 class PracticeStateStore {
@@ -46,11 +54,11 @@ class PracticeStateStore {
   PracticeState read() {
     final onboarded = _prefs.getBool(_kOnboarded) ?? false;
     final windowIdx = _prefs.getInt(_kWindow) ?? 0;
-    final window = PracticeWindow.values[windowIdx.clamp(0, PracticeWindow.values.length - 1)];
+    final window = PracticeWindow
+        .values[windowIdx.clamp(0, PracticeWindow.values.length - 1)];
     final lastIso = _prefs.getString(_kLastDay);
     final last = lastIso == null ? null : DateTime.tryParse(lastIso);
-    final today = StreakMath.today();
-    final practiced = last != null && StreakMath.dayKey(last) == today;
+    final practiced = last != null && StreakMath.dayKey(last) == StreakMath.today();
     final total = _prefs.getInt(_kTotal) ?? 0;
     return PracticeState(
       onboarded: onboarded,
@@ -61,10 +69,26 @@ class PracticeStateStore {
   }
 
   Future<void> setOnboarded(bool v) => _prefs.setBool(_kOnboarded, v);
-  Future<void> setWindow(PracticeWindow w) => _prefs.setInt(_kWindow, w.index);
-  Future<void> markPracticed() async {
-    await _prefs.setString(_kLastDay, StreakMath.iso(StreakMath.today()));
+
+  Future<void> setWindow(PracticeWindow w) async {
+    if (w == PracticeWindow.unknown) {
+      throw ArgumentError('cannot persist PracticeWindow.unknown');
+    }
+    await _prefs.setInt(_kWindow, w.index);
+  }
+
+  /// Idempotent: tapping "done" twice in one day is a no-op for the
+  /// day-key, but the total counter only increments on a new day.
+  Future<bool> markPracticed() async {
+    final today = StreakMath.today();
+    final lastIso = _prefs.getString(_kLastDay);
+    final last = lastIso == null ? null : DateTime.tryParse(lastIso);
+    if (last != null && StreakMath.dayKey(last) == today) {
+      return false; // already counted today
+    }
+    await _prefs.setString(_kLastDay, StreakMath.iso(today));
     await _prefs.setInt(_kTotal, (_prefs.getInt(_kTotal) ?? 0) + 1);
+    return true;
   }
 
   Future<void> reset() async {

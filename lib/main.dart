@@ -1,14 +1,22 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'core/storage/practice_state_provider.dart';
 import 'core/storage/practice_state.dart';
+import 'core/storage/practice_state_provider.dart';
+import 'core/storage/practice_state.dart' show PracticeStateStore;
 import 'core/theme/app_theme.dart';
 import 'features/home/home_screen.dart';
 import 'features/onboarding/onboarding_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  // Lock to portrait — the layouts are designed for it.
+  await SystemChrome.setPreferredOrientations(<DeviceOrientation>[
+    DeviceOrientation.portraitUp,
+    DeviceOrientation.portraitDown,
+  ]);
   final store = await PracticeStateStore.open();
   runApp(ProviderScope(
     overrides: [practiceStoreProvider.overrideWithValue(store)],
@@ -25,6 +33,14 @@ class LockApp extends StatelessWidget {
       title: 'lock.',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light(),
+      darkTheme: AppTheme.dark(),
+      themeMode: ThemeMode.system,
+      localizationsDelegates: const [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: const [Locale('en')],
       home: const _Gate(),
     );
   }

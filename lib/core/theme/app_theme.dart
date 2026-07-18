@@ -29,34 +29,54 @@ class AppColors {
 
 class AppTheme {
   /// Light theme: cream scaffold, teal ink, amber accent.
-  static ThemeData light() {
-    final base = ThemeData.light(useMaterial3: true);
+  static ThemeData light() => _buildTheme(brightness: Brightness.light);
+
+  /// Dark theme: deep teal scaffold, cream text. The dark side of the brand.
+  static ThemeData dark() => _buildTheme(brightness: Brightness.dark);
+
+  static ThemeData _buildTheme({required Brightness brightness}) {
+    final isDark = brightness == Brightness.dark;
+    final base = isDark ? ThemeData.dark(useMaterial3: true) : ThemeData.light(useMaterial3: true);
+
+    final primaryText = isDark ? AppColors.cream : AppColors.ink;
+    final secondaryText = isDark ? AppColors.creamSoft : AppColors.inkSoft;
+    final surfaceColor = isDark ? AppColors.tealDark : AppColors.cream;
+    final onSurfaceColor = isDark ? AppColors.cream : AppColors.ink;
+    final primaryBrand = isDark ? AppColors.amber : AppColors.teal;
+    final onPrimaryBrand = isDark ? AppColors.tealDark : AppColors.cream;
+    final accentBrand = isDark ? AppColors.amberSoft : AppColors.amber;
+    final lineColor = isDark ? AppColors.tealSoft : AppColors.line;
+
     final text = GoogleFonts.interTextTheme(base.textTheme).apply(
-      bodyColor: AppColors.ink,
-      displayColor: AppColors.ink,
+      bodyColor: primaryText,
+      displayColor: primaryText,
     );
+
     return base.copyWith(
       textTheme: text,
-      scaffoldBackgroundColor: AppColors.cream,
+      scaffoldBackgroundColor: surfaceColor,
       colorScheme: base.colorScheme.copyWith(
-        primary: AppColors.teal,
-        onPrimary: AppColors.cream,
-        secondary: AppColors.amber,
-        onSecondary: AppColors.cream,
-        surface: AppColors.cream,
-        onSurface: AppColors.ink,
+        primary: primaryBrand,
+        onPrimary: onPrimaryBrand,
+        secondary: accentBrand,
+        onSecondary: onPrimaryBrand,
+        surface: surfaceColor,
+        onSurface: onSurfaceColor,
+        brightness: brightness,
       ),
-      appBarTheme: const AppBarTheme(
-        backgroundColor: AppColors.cream,
-        foregroundColor: AppColors.ink,
+      appBarTheme: AppBarTheme(
+        backgroundColor: surfaceColor,
+        foregroundColor: onSurfaceColor,
         elevation: 0,
         scrolledUnderElevation: 0,
         centerTitle: false,
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.teal,
-          foregroundColor: AppColors.cream,
+          backgroundColor: primaryBrand,
+          foregroundColor: onPrimaryBrand,
+          disabledBackgroundColor: primaryBrand.withValues(alpha: 0.4),
+          disabledForegroundColor: onPrimaryBrand.withValues(alpha: 0.7),
           padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 32),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(40),
@@ -70,8 +90,8 @@ class AppTheme {
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
-          foregroundColor: AppColors.teal,
-          side: const BorderSide(color: AppColors.teal, width: 1.5),
+          foregroundColor: primaryBrand,
+          side: BorderSide(color: primaryBrand, width: 1.5),
           padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(40),
@@ -85,7 +105,7 @@ class AppTheme {
       ),
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
-          foregroundColor: AppColors.mute,
+          foregroundColor: secondaryText,
           textStyle: GoogleFonts.inter(
             fontSize: 14,
             fontWeight: FontWeight.w500,
@@ -95,45 +115,26 @@ class AppTheme {
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: AppColors.creamSoft,
+        fillColor: isDark ? AppColors.tealSoft : AppColors.creamSoft,
         contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(20),
-          borderSide: const BorderSide(color: AppColors.line),
+          borderSide: BorderSide(color: lineColor),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(20),
-          borderSide: const BorderSide(color: AppColors.line),
+          borderSide: BorderSide(color: lineColor),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(20),
-          borderSide: const BorderSide(color: AppColors.teal, width: 1.5),
+          borderSide: BorderSide(color: primaryBrand, width: 1.5),
         ),
         hintStyle: GoogleFonts.inter(
           color: AppColors.mute,
           fontSize: 15,
         ),
       ),
-    );
-  }
-
-  /// Dark theme: deep teal scaffold, cream text. The dark side of the brand.
-  static ThemeData dark() {
-    final base = ThemeData.dark(useMaterial3: true);
-    final text = GoogleFonts.interTextTheme(base.textTheme).apply(
-      bodyColor: AppColors.cream,
-      displayColor: AppColors.cream,
-    );
-    return base.copyWith(
-      textTheme: text,
-      scaffoldBackgroundColor: AppColors.tealDark,
-      colorScheme: base.colorScheme.copyWith(
-        primary: AppColors.amber,
-        onPrimary: AppColors.tealDark,
-        secondary: AppColors.amberSoft,
-        surface: AppColors.tealDark,
-        onSurface: AppColors.cream,
-      ),
+      dividerTheme: DividerThemeData(color: lineColor, thickness: 1, space: 1),
     );
   }
 }
@@ -141,14 +142,17 @@ class AppTheme {
 /// The brand mark used in headers and small contexts.
 class BrandMark {
   /// The full wordmark with the small amber dot above the "o".
-  /// Size is the height of the wordmark in logical pixels.
-  static Widget wordmark({double size = 24, Color color = AppColors.cream, Color? accent}) {
-    return CustomPaint(
-      size: Size(size * 3.0, size),
-      painter: _WordmarkPainter(
-        fontSize: size,
-        color: color,
-        accent: accent ?? AppColors.amber,
+  /// [size] is the cap-height of the rendered text in logical pixels.
+  static Widget wordmark({double size = 24, Color? color, Color? accent}) {
+    final c = color ?? AppColors.cream;
+    final a = accent ?? AppColors.amber;
+    // Width estimated for "lock." in DM Serif Display; height includes
+    // headroom for the dot above the text.
+    return SizedBox(
+      width: size * 2.4,
+      height: size * 1.25,
+      child: CustomPaint(
+        painter: _WordmarkPainter(textHeight: size, color: c, accent: a),
       ),
     );
   }
@@ -164,27 +168,25 @@ class BrandMark {
 }
 
 class _WordmarkPainter extends CustomPainter {
-  _WordmarkPainter({required this.fontSize, required this.color, required this.accent});
-  final double fontSize;
+  _WordmarkPainter({
+    required this.textHeight,
+    required this.color,
+    required this.accent,
+  });
+  final double textHeight;
   final Color color;
   final Color accent;
 
   @override
   void paint(Canvas canvas, Size size) {
-    // Draw the small accent dot above the "o" position.
-    final dotY = size.height * 0.05;
-    final dotX = size.width * 0.33;
-    final dotRadius = size.height * 0.05;
-    final dotPaint = Paint()..color = accent;
-    canvas.drawCircle(Offset(dotX, dotY), dotRadius, dotPaint);
-
-    // Draw "lock." in DM Serif Display, cream.
+    // Render the wordmark at ~75% of the canvas height so the dot has room.
+    final fontSize = textHeight * 0.75;
     final textPainter = TextPainter(
       text: TextSpan(
         text: 'lock.',
         style: GoogleFonts.dmSerifDisplay(
           color: color,
-          fontSize: fontSize * 2.0,
+          fontSize: fontSize,
           fontWeight: FontWeight.w400,
           height: 1.0,
         ),
@@ -192,14 +194,30 @@ class _WordmarkPainter extends CustomPainter {
       textDirection: TextDirection.ltr,
     );
     textPainter.layout();
-    // Center vertically with the dot taking some headroom
-    final textY = (size.height - textPainter.height) / 2;
-    textPainter.paint(canvas, Offset(0, textY));
+
+    // Center the text in the canvas.
+    final textX = (size.width - textPainter.width) / 2;
+    final textY = (size.height - textPainter.height) / 2 + textHeight * 0.05;
+
+    // Find the center of the "o" character (index 1 of 5) so the dot
+    // is precisely above the right letter, not eyeballed.
+    final oStart = textPainter.getOffsetForCaret(const TextPosition(offset: 1));
+    final oEnd = textPainter.getOffsetForCaret(const TextPosition(offset: 2));
+    final oCenterX = textX + (oStart.dx + oEnd.dx) / 2;
+
+    // Paint the text first.
+    textPainter.paint(canvas, Offset(textX, textY));
+
+    // Then paint the dot above the "o", with a small gap from the text top.
+    final dotRadius = textHeight * 0.06;
+    final dotY = textY - dotRadius - textHeight * 0.04;
+    final dotPaint = Paint()..color = accent;
+    canvas.drawCircle(Offset(oCenterX, dotY), dotRadius, dotPaint);
   }
 
   @override
   bool shouldRepaint(_WordmarkPainter old) =>
-      old.fontSize != fontSize || old.color != color || old.accent != accent;
+      old.textHeight != textHeight || old.color != color || old.accent != accent;
 }
 
 class _DotInRingPainter extends CustomPainter {
@@ -209,13 +227,14 @@ class _DotInRingPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final center = Offset(size.width / 2, size.height / 2);
-    final ringRadius = size.width * 0.42;
+    final ringRadius = size.width * 0.40;
     final dotRadius = size.width * 0.14;
+    final strokeWidth = size.width * 0.05;
 
     final ringPaint = Paint()
       ..color = color
       ..style = PaintingStyle.stroke
-      ..strokeWidth = size.width * 0.04;
+      ..strokeWidth = strokeWidth;
     canvas.drawCircle(center, ringRadius, ringPaint);
 
     final dotPaint = Paint()..color = color;

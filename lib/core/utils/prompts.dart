@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart' show rootBundle;
 
 /// A Bible verse, or a non-scripture prompt.
@@ -16,28 +17,55 @@ class Prompt {
   bool get isVerse => translation != 'open';
 }
 
-/// Loads a curated pool of verses and prompts, then picks one for today.
-/// Deterministic: the same calendar day yields the same prompt, so the user
-/// can return to a verse they remember.
+/// Loads a curated pool of verses, then deterministically picks one
+/// for today. The same calendar day always yields the same prompt, so
+/// the user can return to a verse they remember.
+///
+/// Falls back to a hardcoded verse if the asset fails to load — the
+/// user never sees a blank screen.
 class PromptPicker {
   static const _versesPath = 'assets/verses/verses.json';
 
+  /// Hardcoded fallback if the asset can't be loaded.
+  static const _fallback = [
+    Prompt(
+      id: 'fallback-1',
+      ref: 'Psalm 46:10',
+      text: 'Be still, and know that I am God.',
+      translation: 'ESV',
+    ),
+  ];
+
   static List<Prompt>? _cache;
+
   static Future<List<Prompt>> _all() async {
     if (_cache != null) return _cache!;
-    final raw = await rootBundle.loadString(_versesPath);
-    final data = json.decode(raw) as Map<String, dynamic>;
-    final list = (data['verses'] as List<dynamic>)
-        .cast<Map<String, dynamic>>()
-        .map((m) => Prompt(
-              id: m['id'] as String,
-              ref: m['ref'] as String,
-              text: m['text'] as String,
-              translation: m['translation'] as String,
-            ))
-        .toList();
-    _cache = list;
-    return list;
+    try {
+      final raw = await rootBundle.loadString(_versesPath);
+      final data = json.decode(raw) as Map<String, dynamic>;
+      final list = (data['verses'] as List<dynamic>)
+          .cast<Map<String, dynamic>>()
+          .map((m) => Prompt(
+                id: m['id'] as String,
+                ref: m['ref'] as String,
+                text: m['text'] as String,
+                translation: m['translation'] as String,
+              ))
+          .toList();
+      if (list.isEmpty) {
+        _cache = List.of(_fallback);
+      } else {
+        _cache = list;
+      }
+      return _cache!;
+    } catch (e) {
+      if (kDebugMode) {
+        // ignore: avoid_print
+        print('PromptPicker: failed to load verses asset, using fallback. $e');
+      }
+      _cache = List.of(_fallback);
+      return _cache!;
+    }
   }
 
   /// The prompt for today, deterministically chosen from the day's date key.
@@ -48,6 +76,12 @@ class PromptPicker {
     final dayKey = today.year * 1000 + _dayOfYear(today);
     final idx = dayKey % verses.length;
     return verses[idx];
+  }
+
+  /// Test-only: clear the cache.
+  @visibleForTesting
+  static void resetCache() {
+    _cache = null;
   }
 
   static int _dayOfYear(DateTime d) {
