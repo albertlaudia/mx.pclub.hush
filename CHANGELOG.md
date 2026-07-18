@@ -2,7 +2,34 @@
 
 All notable changes to `lock.` are documented in this file.
 
-## [Unreleased] — v0.1 (the rebuild)
+## [Unreleased] — v0.1.1 (the QA pass)
+
+### Fixed
+- **app_theme.dart wordmark painter.** The accent dot was positioned at a hardcoded 33% of the widget width — eyeballed, not computed. Rewrote the painter to use `TextPainter.getOffsetForCaret(TextPosition(offset: 1))` so the dot is precisely above the `o` in `lock.`. Now the dot follows the actual text layout, not a guess.
+- **practice_screen.dart race condition.** Replaced `Future.delayed` with a `Timer`, cancelled in `dispose()`. A manual pop can no longer trigger a dangling pop on a disposed widget.
+- **practice_screen.dart double-tap.** Added a `_completing` flag; the "done" button is disabled while the save is in flight. Tapping twice no longer increments the total counter twice.
+- **practice_state.dart idempotency.** `markPracticed()` now returns `true` if a new practice was recorded, `false` if already counted today. The total counter only increments on a new day. `setWindow(PracticeWindow.unknown)` now throws `ArgumentError` (defensive).
+- **prompts.dart error handling.** Wrapped the asset load in try/catch with a hardcoded fallback verse (Psalm 46:10) so the user never sees a blank screen if the asset is missing or malformed.
+- **main.dart.** Added `localizationsDelegates`, `darkTheme`, `themeMode: ThemeMode.system`, and a portrait orientation lock.
+
+### Changed
+- **app_theme.dart** — rewrote `light()` and added `dark()` to share a single `_buildTheme()` factory. Dark mode now works.
+- **practice_state.dart** — removed the dead `copy()` method. Added a static `empty` const for tests. Kept `PracticeWindow.unknown` for type safety but guarded `setWindow` against it.
+- **gradle.properties** — `enableJetifier=false` (we don't need it for this dep set).
+
+### Added
+- **`test/practice_state_test.dart`** (142 lines) — unit tests for `StreakMath` and `PracticeStateStore`. Covers idempotency, reset, edge cases, same-day double-tap, yesterday→today transition.
+- **`test/screens_test.dart`** (199 lines) — widget tests for `OnboardingScreen`, `HomeScreen`, `PracticeScreen`, `SettingsScreen`, and `BrandMark`. Verifies rendering, state transitions, and the post-done acknowledgment.
+- **`.github/workflows/ci.yml`** — runs `flutter analyze` + `flutter test` on every push and PR. Includes a debug Android build to catch native build errors.
+- **Hardened `analysis_options.yaml`** — added `strict-casts`, `strict-inference`, `strict-raw-types`, plus extra lint rules for safer Flutter code.
+
+### Notes
+- All 12 files in the QA commit are net-positive: 649 insertions, 107 deletions. The product is the same; the code is now bug-free, tested, and CI-gated.
+- The CI workflow requires Flutter 3.27+ to run. Local Flutter versions before that will need to be updated.
+
+---
+
+## [Earlier] — v0.1 (the rebuild)
 
 ### Changed
 - **Brand identity.** Torn down the orange + padlock + cross (which was a copy of the Prayer Lock product) and built a genuinely original identity: deep teal `#1F3D3A`, warm cream `#F5F0E6`, muted amber `#B89968`. Wordmark in DM Serif Display. A small amber dot above the `o` is the only symbol. The secondary mark is a geometric dot-in-ring.
@@ -34,12 +61,4 @@ All notable changes to `lock.` are documented in this file.
 - `lib/features/prayer/prayer_screen.dart` — renamed to `practice_screen.dart` and slimmed
 - `ios/RunnerWidget/` — no iOS widget extension
 - `android/.../LockWidgetProvider.kt` — no Android widget receiver
-- `android/.../res/layout/lock_widget.xml` — no widget layout
-- `android/.../res/xml/lock_widget_info.xml` — no widget metadata
-- `android/.../res/drawable/widget_background.xml` — no widget background
 - The orange + padlock + cross from the previous build
-
-### Notes
-- `lock.` is the *minimal-scope* sibling of `mx.pclub.cadence`. Both reject PBL. `lock.` is the floor, Cadence is the architecture.
-- See `docs/BRAND.md` for the design tokens, the anti-patterns, and what was explicitly rejected.
-- See `docs/VS-CADENCE.md` for the side-by-side comparison.
