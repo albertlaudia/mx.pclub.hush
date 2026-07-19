@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../core/storage/practice_state.dart';
 import '../../core/storage/practice_state_provider.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/ui/verse_preview.dart';

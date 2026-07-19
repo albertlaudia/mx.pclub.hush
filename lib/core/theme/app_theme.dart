@@ -201,8 +201,8 @@ class _WordmarkPainter extends CustomPainter {
 
     // Find the center of the "o" character (index 1 of 5) so the dot
     // is precisely above the right letter, not eyeballed.
-    final oStart = textPainter.getOffsetForCaret(const TextPosition(offset: 1));
-    final oEnd = textPainter.getOffsetForCaret(const TextPosition(offset: 2));
+    final oStart = textPainter.getOffsetForCaret(const TextPosition(offset: 1), Rect.zero);
+    final oEnd = textPainter.getOffsetForCaret(const TextPosition(offset: 2), Rect.zero);
     final oCenterX = textX + (oStart.dx + oEnd.dx) / 2;
 
     // Paint the text first.

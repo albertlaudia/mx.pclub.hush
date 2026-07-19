@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hush/core/storage/practice_state.dart';
+import 'package:hush/core/utils/prompts.dart';
 import 'package:hush/core/utils/streak_math.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 

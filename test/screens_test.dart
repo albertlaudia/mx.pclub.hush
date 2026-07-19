@@ -64,8 +64,8 @@ void main() {
   group('BrandMark', () {
     testWidgets('wordmark and dot-in-ring render without overflow', (tester) async {
       await tester.pumpWidget(
-        const MaterialApp(
-          home: Scaffold(
+        MaterialApp(
+          home: const Scaffold(
             body: Center(
               child: Row(
                 mainAxisSize: MainAxisSize.min,
