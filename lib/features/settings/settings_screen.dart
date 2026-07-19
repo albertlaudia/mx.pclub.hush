@@ -4,10 +4,16 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/storage/practice_state.dart';
 import '../../core/storage/practice_state_provider.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/ui/what_is_this_sheet.dart';
+import 'about_sheet.dart';
 
-/// Settings — a single page. Practice window, locale, about, sign out
-/// (which is just "reset practice state" for the MVP since there's no
-/// account).
+/// Settings — a single page. Practice, help, reset.
+///
+/// The page is for actions: change the window, learn what the product
+/// is, reset state. Dev info (version, made by) is hidden behind the
+/// "about lock." sheet. The total practices counter is also there
+/// (the user asked for it in a moment of self-reflection; we honour
+/// that without surfacing it on the home screen).
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
 
@@ -35,7 +41,7 @@ class SettingsScreen extends ConsumerWidget {
       body: ListView(
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
         children: [
-          _SectionHeader('practice'),
+          const _SectionHeader('practice'),
           const SizedBox(height: 12),
           _Card(
             children: [
@@ -49,21 +55,24 @@ class SettingsScreen extends ConsumerWidget {
                 label: 'today',
                 value: state.practicedToday ? 'done' : 'not yet',
               ),
-              const Divider(height: 1, color: AppColors.line),
-              _Row(
-                label: 'total practices',
-                value: '${state.totalPractices}',
-              ),
             ],
           ),
           const SizedBox(height: 32),
-          _SectionHeader('about'),
+          const _SectionHeader('help'),
           const SizedBox(height: 12),
           _Card(
             children: [
-              _Row(label: 'version', value: '0.1.0'),
+              _Row(
+                label: 'what is this?',
+                value: '',
+                onTap: () => WhatIsThisSheet.show(context),
+              ),
               const Divider(height: 1, color: AppColors.line),
-              _Row(label: 'made by', value: 'pclub'),
+              _Row(
+                label: 'about lock.',
+                value: '',
+                onTap: () => AboutSheet.show(context),
+              ),
             ],
           ),
           const SizedBox(height: 32),
@@ -234,13 +243,14 @@ class _Row extends StatelessWidget {
                 ),
               ),
             ),
-            Text(
-              value,
-              style: TextStyle(
-                fontSize: 14,
-                color: AppColors.inkSoft,
+            if (value.isNotEmpty)
+              Text(
+                value,
+                style: TextStyle(
+                  fontSize: 14,
+                  color: AppColors.inkSoft,
+                ),
               ),
-            ),
             if (onTap != null) ...[
               const SizedBox(width: 4),
               Icon(Icons.chevron_right, color: AppColors.mute, size: 18),

@@ -4,16 +4,20 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/storage/practice_state.dart';
 import '../../core/storage/practice_state_provider.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/ui/verse_preview.dart';
+import '../../core/ui/what_is_this_sheet.dart';
 import '../../core/utils/prompts.dart';
 import '../practice/practice_screen.dart';
 import '../settings/settings_screen.dart';
 
 /// Home — the only screen you'll see most days.
 ///
-/// Today's practice card. A verse, a prompt, a "begin" button. That's it.
+/// The home is a *preview* of the practice. It shows the reference and
+/// the first few words of the verse, plus a "what is this?" link for
+/// new users. The full verse is reserved for the practice moment.
+///
 /// No streak. No flame. No "extraordinary! your prayer journey is an
-/// inspiration" copy. No mood check-in. No Section. No widget. No
-/// notification. The product is the practice.
+/// inspiration" copy. The product is the practice.
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
   @override
@@ -109,22 +113,25 @@ class _ActiveState extends ConsumerWidget {
         ),
         const SizedBox(height: 12),
         if (p != null) ...[
+          // The reference — small, all-caps, amber. The hint of what's coming.
           Text(
             p.ref,
-            style: TextStyle(
-              fontSize: 12,
+            style: const TextStyle(
+              fontSize: 13,
               fontWeight: FontWeight.w600,
-              color: AppColors.mute,
-              letterSpacing: 0.4,
+              color: AppColors.amber,
+              letterSpacing: 0.8,
             ),
           ),
           const SizedBox(height: 14),
+          // The verse preview — first 6 words, italicized. A taste, not
+          // the full thing. The practice screen reveals the rest.
           Text(
-            '"${p.text}"',
+            versePreviewText(p.text),
             style: const TextStyle(
-              fontSize: 22,
+              fontSize: 18,
               height: 1.4,
-              color: AppColors.teal,
+              color: AppColors.ink,
               fontStyle: FontStyle.italic,
               fontWeight: FontWeight.w400,
             ),
@@ -137,7 +144,27 @@ class _ActiveState extends ConsumerWidget {
               color: AppColors.mute,
             ),
           ),
-        const SizedBox(height: 36),
+        const SizedBox(height: 12),
+        // The "what is this?" affordance — for users who want context
+        // before they commit to the practice.
+        TextButton(
+          onPressed: () => WhatIsThisSheet.show(context),
+          style: TextButton.styleFrom(
+            padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 8),
+            minimumSize: const Size(0, 0),
+            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          ),
+          child: Text(
+            'what is this?',
+            style: TextStyle(
+              color: AppColors.amber,
+              fontSize: 13,
+              fontWeight: FontWeight.w500,
+              letterSpacing: 0.2,
+            ),
+          ),
+        ),
+        const SizedBox(height: 20),
         SizedBox(
           width: double.infinity,
           child: ElevatedButton(
@@ -200,10 +227,12 @@ class _PracticedState extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 12),
+        // Reference only — no full verse. The brand says the practice is
+        // the moment, not the archive.
         Text(
           prompt == null
               ? 'today\'s practice is complete.'
-              : 'today\'s practice was "${prompt!.text}"',
+              : "today's practice was ${prompt!.ref.toLowerCase()}.",
           style: TextStyle(
             fontSize: 14,
             color: AppColors.inkSoft,

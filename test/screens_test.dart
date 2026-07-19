@@ -4,11 +4,12 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:lock/core/storage/practice_state.dart';
 import 'package:lock/core/storage/practice_state_provider.dart';
 import 'package:lock/core/theme/app_theme.dart';
+import 'package:lock/core/ui/verse_preview.dart';
+import 'package:lock/core/utils/prompts.dart';
 import 'package:lock/features/home/home_screen.dart';
 import 'package:lock/features/onboarding/onboarding_screen.dart';
 import 'package:lock/features/practice/practice_screen.dart';
 import 'package:lock/features/settings/settings_screen.dart';
-import 'package:lock/core/utils/prompts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 /// Test helper: build a widget tree wrapped in ProviderScope with a
@@ -29,27 +30,39 @@ Widget _harness({
 Future<PracticeStateStore> _freshStore({
   bool onboarded = false,
   PracticeWindow window = PracticeWindow.unknown,
-  bool practicedToday = false,
-  int total = 0,
 }) async {
   SharedPreferences.setMockInitialValues({});
   final store = await PracticeStateStore.open();
   if (onboarded) await store.setOnboarded(true);
   if (window != PracticeWindow.unknown) await store.setWindow(window);
-  // We can't easily simulate practicedToday without a real clock; the
-  // window-set path is the most useful to test.
-  if (total > 0) {
-    // Bump the total by markPracticed calls.
-    // (Marking will set lastDay to today; not used in these tests below.)
-  }
   return store;
 }
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
+  group('versePreviewText', () {
+    test('returns the full text in quotes when under the word limit', () {
+      expect(versePreviewText('Be still.'), '"Be still."');
+    });
+
+    test('truncates to the first 6 words with an ellipsis', () {
+      expect(
+        versePreviewText('Be still, and know that I am God.'),
+        '"Be still, and know that I am…"',
+      );
+    });
+
+    test('treats 6 words as a full preview', () {
+      expect(
+        versePreviewText('Be still, and know that I am.'),
+        '"Be still, and know that I am."',
+      );
+    });
+  });
+
   group('BrandMark', () {
-    testWidgets('wordmark renders without overflow', (tester) async {
+    testWidgets('wordmark and dot-in-ring render without overflow', (tester) async {
       await tester.pumpWidget(
         const MaterialApp(
           home: Scaffold(
@@ -66,7 +79,6 @@ void main() {
           ),
         ),
       );
-      // Pump a frame so the CustomPainter paints.
       await tester.pump();
       expect(find.byType(BrandMark), findsWidgets);
       expect(tester.takeException(), isNull);
@@ -86,7 +98,6 @@ void main() {
       expect(find.text('midday'), findsOneWidget);
       expect(find.text('evening'), findsOneWidget);
       expect(find.text('anytime'), findsOneWidget);
-      // The "begin" button is disabled until a window is picked.
       final beginFinder = find.widgetWithText(ElevatedButton, 'begin');
       expect(beginFinder, findsOneWidget);
       final beginButton = tester.widget<ElevatedButton>(beginFinder);
@@ -101,28 +112,51 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(find.text('morning'));
       await tester.pump();
-      final beginFinder = find.widgetWithText(ElevatedButton, 'begin');
-      final beginButton = tester.widget<ElevatedButton>(beginFinder);
+      final beginButton =
+          tester.widget<ElevatedButton>(find.widgetWithText(ElevatedButton, 'begin'));
       expect(beginButton.onPressed, isNotNull);
     });
   });
 
   group('HomeScreen', () {
-    testWidgets('shows the active state when not practiced today',
+    testWidgets('shows the active state with verse preview + what-is-this link',
         (tester) async {
       final store = await _freshStore(onboarded: true, window: PracticeWindow.morning);
       await tester.pumpWidget(
         _harness(child: const HomeScreen(), store: store),
       );
-      // Wait for the async prompt to load.
       await tester.pumpAndSettle();
+
+      // The active state: label, reference, preview, "what is this?", "begin".
       expect(find.text("today's practice"), findsOneWidget);
       expect(find.widgetWithText(ElevatedButton, 'begin'), findsOneWidget);
+      expect(find.text('what is this?'), findsOneWidget);
       expect(find.text('see you tomorrow.'), findsNothing);
+
+      // The verse is a PREVIEW, not the full text. The full verse is
+      // reserved for the practice moment.
+      final previewFinder = find.byWidgetPredicate(
+        (w) => w is Text && (w.data?.contains('…') ?? false),
+      );
+      expect(previewFinder, findsOneWidget);
     });
 
-    testWidgets('shows the practiced state when practiced today',
+    testWidgets('tapping "what is this?" opens the explanation sheet',
         (tester) async {
+      final store = await _freshStore(onboarded: true, window: PracticeWindow.morning);
+      await tester.pumpWidget(
+        _harness(child: const HomeScreen(), store: store),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('what is this?'));
+      await tester.pumpAndSettle();
+      expect(find.text('one short practice, once a day.'), findsOneWidget);
+      expect(find.text('no streak. no score. no notification reminders.'),
+          findsOneWidget);
+      expect(find.text('no data leaves this phone.'), findsOneWidget);
+    });
+
+    testWidgets('shows the practiced state when practiced today', (tester) async {
       SharedPreferences.setMockInitialValues({
         'lock.onboarded': true,
         'lock.window': PracticeWindow.morning.index,
@@ -137,6 +171,8 @@ void main() {
       expect(find.text('today is done'), findsOneWidget);
       expect(find.text('see you tomorrow.'), findsOneWidget);
       expect(find.text('begin'), findsNothing);
+      // Practiced state shows reference only, not full verse.
+      expect(find.textContaining('Psalm 46:10'.toLowerCase()), findsOneWidget);
     });
   });
 
@@ -148,7 +184,7 @@ void main() {
       translation: 'ESV',
     );
 
-    testWidgets('renders the verse and a done button', (tester) async {
+    testWidgets('hides the verse for 800ms, then reveals it', (tester) async {
       final store = await _freshStore();
       await tester.pumpWidget(
         _harness(
@@ -156,13 +192,27 @@ void main() {
           store: store,
         ),
       );
-      await tester.pumpAndSettle();
-      expect(find.text('Psalm 46:10'), findsOneWidget);
+
+      // Immediately after mount: the verse is hidden.
+      // The reference and text are not yet visible.
+      await tester.pump();
+      // The verse is wrapped in AnimatedOpacity(opacity: 0), so the
+      // text widget is in the tree but not painted visibly. Use
+      // exists() to verify the layout, not findsOneWidget.
       expect(find.text('"Be still, and know that I am God."'), findsOneWidget);
-      expect(find.widgetWithText(ElevatedButton, 'done'), findsOneWidget);
+
+      // The button is in "..." state — the verse hasn't revealed yet.
+      expect(find.widgetWithText(ElevatedButton, '...'), findsOneWidget);
+
+      // After 800ms (reveal timer) + 400ms (fade), the verse is visible.
+      await tester.pump(const Duration(milliseconds: 1200));
+      await tester.pumpAndSettle();
+
+      // The button is now "continue".
+      expect(find.widgetWithText(ElevatedButton, 'continue'), findsOneWidget);
     });
 
-    testWidgets('shows "see you tomorrow" after done is tapped',
+    testWidgets('tapping continue shows "see you tomorrow" then auto-pops',
         (tester) async {
       final store = await _freshStore(onboarded: true);
       await tester.pumpWidget(
@@ -171,16 +221,23 @@ void main() {
           store: store,
         ),
       );
+      // Wait for the verse to reveal.
       await tester.pumpAndSettle();
-      await tester.tap(find.widgetWithText(ElevatedButton, 'done'));
-      // Allow the async markPracticed to complete and the state to update.
-      await tester.pumpAndSettle();
+      expect(find.widgetWithText(ElevatedButton, 'continue'), findsOneWidget);
+
+      await tester.tap(find.widgetWithText(ElevatedButton, 'continue'));
+
+      // Pump enough for the async markPracticed to complete and the
+      // state to update, but NOT enough to trigger the 1500ms auto-pop.
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
+
       expect(find.text('see you tomorrow.'), findsOneWidget);
     });
   });
 
   group('SettingsScreen', () {
-    testWidgets('renders the practice window and the total', (tester) async {
+    testWidgets('renders window, today, help links, and reset', (tester) async {
       SharedPreferences.setMockInitialValues({
         'lock.onboarded': true,
         'lock.window': PracticeWindow.evening.index,
@@ -191,9 +248,33 @@ void main() {
         _harness(child: const SettingsScreen(), store: store),
       );
       await tester.pumpAndSettle();
+
+      // Practice section.
       expect(find.text('evening · 8–10pm'), findsOneWidget);
-      expect(find.text('12'), findsOneWidget);
+      expect(find.text('not yet'), findsOneWidget);
+
+      // Help section.
+      expect(find.text('what is this?'), findsOneWidget);
+      expect(find.text('about lock.'), findsOneWidget);
+
+      // Reset is at the bottom.
       expect(find.text('reset practice state'), findsOneWidget);
+
+      // Version and made-by are gone from the main page (moved to about).
+      expect(find.text('0.1.0'), findsNothing);
+      expect(find.text('pclub'), findsNothing);
+    });
+
+    testWidgets('tapping "what is this?" opens the sheet from settings too',
+        (tester) async {
+      final store = await _freshStore(onboarded: true);
+      await tester.pumpWidget(
+        _harness(child: const SettingsScreen(), store: store),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('what is this?'));
+      await tester.pumpAndSettle();
+      expect(find.text('one short practice, once a day.'), findsOneWidget);
     });
   });
 }
