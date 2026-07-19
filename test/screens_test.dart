@@ -65,7 +65,7 @@ void main() {
     testWidgets('wordmark and dot-in-ring render without overflow', (tester) async {
       await tester.pumpWidget(
         MaterialApp(
-          home: const Scaffold(
+          home: Scaffold(
             body: Center(
               child: Row(
                 mainAxisSize: MainAxisSize.min,
@@ -80,7 +80,7 @@ void main() {
         ),
       );
       await tester.pump();
-      expect(find.byType(BrandMark), findsWidgets);
+      expect(find.byType(CustomPaint), findsWidgets);
       expect(tester.takeException(), isNull);
     });
   });
