@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 
-/// "what is this?" — the on-brand explanation of `lock.`
+/// "what is this?" — the on-brand explanation of `hush.`
 ///
 /// Four short lines, one button. Used from:
 ///   - the home screen link

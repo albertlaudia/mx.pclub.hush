@@ -20,17 +20,17 @@ Future<void> main() async {
   final store = await PracticeStateStore.open();
   runApp(ProviderScope(
     overrides: [practiceStoreProvider.overrideWithValue(store)],
-    child: const LockApp(),
+    child: const HushApp(),
   ));
 }
 
-class LockApp extends StatelessWidget {
-  const LockApp({super.key});
+class HushApp extends StatelessWidget {
+  const HushApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'lock.',
+      title: 'hush.',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light(),
       darkTheme: AppTheme.dark(),

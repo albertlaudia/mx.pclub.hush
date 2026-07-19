@@ -11,7 +11,7 @@ import 'about_sheet.dart';
 ///
 /// The page is for actions: change the window, learn what the product
 /// is, reset state. Dev info (version, made by) is hidden behind the
-/// "about lock." sheet. The total practices counter is also there
+/// "about hush." sheet. The total practices counter is also there
 /// (the user asked for it in a moment of self-reflection; we honour
 /// that without surfacing it on the home screen).
 class SettingsScreen extends ConsumerWidget {
@@ -69,7 +69,7 @@ class SettingsScreen extends ConsumerWidget {
               ),
               const Divider(height: 1, color: AppColors.line),
               _Row(
-                label: 'about lock.',
+                label: 'about hush.',
                 value: '',
                 onTap: () => AboutSheet.show(context),
               ),

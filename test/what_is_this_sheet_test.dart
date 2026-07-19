@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:lock/core/theme/app_theme.dart';
-import 'package:lock/core/ui/what_is_this_sheet.dart';
+import 'package:hush/core/theme/app_theme.dart';
+import 'package:hush/core/ui/what_is_this_sheet.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();

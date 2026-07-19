@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-/// Brand tokens for `lock.`
+/// Brand tokens for `hush.`
 ///
 /// The palette: deep teal, warm cream, muted amber. Quiet, editorial,
 /// distinctive. No orange. No padlock. No cross. Genuinely ours.
@@ -146,7 +146,7 @@ class BrandMark {
   static Widget wordmark({double size = 24, Color? color, Color? accent}) {
     final c = color ?? AppColors.cream;
     final a = accent ?? AppColors.amber;
-    // Width estimated for "lock." in DM Serif Display; height includes
+    // Width estimated for "hush." in DM Serif Display; height includes
     // headroom for the dot above the text.
     return SizedBox(
       width: size * 2.4,
@@ -183,7 +183,7 @@ class _WordmarkPainter extends CustomPainter {
     final fontSize = textHeight * 0.75;
     final textPainter = TextPainter(
       text: TextSpan(
-        text: 'lock.',
+        text: 'hush.',
         style: GoogleFonts.dmSerifDisplay(
           color: color,
           fontSize: fontSize,

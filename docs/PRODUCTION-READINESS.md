@@ -1,8 +1,8 @@
-# Production Readiness — `lock.`
+# Production Readiness — `hush.`
 
 > The complete list of every touchpoint before App Store / Play Store submission, with current status, priority, and effort estimate.
 
-**Repo state at analysis time:** v0.1.1, 1,420 lines of Dart, 14 tests passing, CI green, brand locked.
+**Repo state at analysis time:** v0.2, ~1,800 lines of Dart, 16 tests passing, CI green, brand locked.
 
 **TL;DR — the critical path is ~5 working days of focused work, plus ~2 weeks of waiting on store review.** Everything else is "should have" for v1.0 and "nice to have" for v1.1+.
 
@@ -106,7 +106,7 @@ The numbers are estimates for an experienced Flutter dev. They assume you have t
 | 4.2 | Text contrast WCAG 2.1 AA | 🟡 partial | P0 | S |
 | | Ink (#1A1A1A) on cream (#F5F0E6): contrast ratio ≈ 14.5:1. ✅ Teal on cream: ≈ 9.5:1. ✅ Amber on cream: ≈ 3.6:1. ⚠️ This is below AA 4.5:1 for normal text — the amber dot and "amber" labels may need darker amber or use the inkSoft instead. | | | |
 | 4.3 | Semantic labels on icons | ❌ not started | P0 | S |
-| | The IconButton close has `tooltip: 'close'`. The BrandMark wordmark and dot-in-ring need `Semantics(label: 'lock', excludeSemantics: true)` or similar. | | | |
+| | The IconButton close has `tooltip: 'close'`. The BrandMark wordmark and dot-in-ring need `Semantics(label: 'hush', excludeSemantics: true)` or similar. | | | |
 | 4.4 | Semantic labels on the verse | ❌ not started | P0 | S |
 | | The verse should be readable by screen readers. Wrap in `Semantics(label: 'verse', child: ...)`. | | | |
 | 4.5 | Dynamic Type / font scaling | ❌ not started | P1 | M |
@@ -183,12 +183,12 @@ The numbers are estimates for an experienced Flutter dev. They assume you have t
 | 7.1 | Apple Developer Program enrollment | ❌ not started (you) | P0 | — |
 | | $99/yr. Required for App Store and TestFlight. | | | |
 | 7.2 | App Store Connect app record | ❌ not started | P0 | S |
-| | Bundle ID `mx.pclub.lock`, primary language English. | | | |
+| | Bundle ID `mx.pclub.hush`, primary language English. | | | |
 | 7.3 | App icon 1024×1024 (no alpha) | ✅ done | P0 | — |
 | 7.4 | **Screenshots (6.7", 6.5", 5.5" iPhone)** | ❌ not started | P0 | L |
 | | Need 4-6 screenshots per device class. Capture from a running build, or design in Figma. Sizes: 1290×2796, 1242×2688, 1242×2208. | | | |
 | 7.5 | **App name** | ❌ not started | P0 | S |
-| | "lock." (4 chars, fits). | | | |
+| | "hush." (4 chars, fits). | | | |
 | 7.6 | **Subtitle** | ❌ not started | P0 | S |
 | | "a daily practice, quietly" (24 chars, fits in 30). | | | |
 | 7.7 | **Promotional text** | ❌ not started | P0 | S |
@@ -209,7 +209,7 @@ The numbers are estimates for an experienced Flutter dev. They assume you have t
 | 7.15 | **Build archive in Xcode** | ❌ not started | P0 | M |
 | | `flutter build ipa` + Xcode Organizer → Distribute App → App Store Connect. Requires a Mac. | | | |
 | 7.16 | **Submission** | ❌ not started | P0 | S |
-| | App Store Connect → My Apps → lock. → + Version → fill in the above → submit for review. | | | |
+| | App Store Connect → My Apps → hush. → + Version → fill in the above → submit for review. | | | |
 | 7.17 | **Review time** | — | — | — |
 | | Apple review: 24-48h typically, longer for first submission. | | | |
 
@@ -220,7 +220,7 @@ The numbers are estimates for an experienced Flutter dev. They assume you have t
 | 7.18 | Google Play Console account | ❌ not started (you) | P0 | — |
 | | $25 one-time. | | | |
 | 7.19 | Play Console app creation | ❌ not started | P0 | S |
-| | Package `mx.pclub.lock`, default category. | | | |
+| | Package `mx.pclub.hush`, default category. | | | |
 | 7.20 | App icon 512×512 | ✅ done | P0 | — |
 | 7.21 | **Feature graphic 1024×500** | ❌ not started | P0 | M |
 | | Required. The current `media/hero-1920x1080.png` is the wrong dimensions. Generate a 1024×500 version. | | | |
@@ -229,7 +229,7 @@ The numbers are estimates for an experienced Flutter dev. They assume you have t
 | 7.23 | **7" tablet screenshots (optional)** | ❌ not started | P2 | M |
 | 7.24 | **10" tablet screenshots (optional)** | ❌ not started | P2 | M |
 | 7.25 | **App name** | ❌ not started | P0 | S |
-| | "lock." (50 char limit). | | | |
+| | "hush." (50 char limit). | | | |
 | 7.26 | **Short description (80 chars)** | ❌ not started | P0 | S |
 | | "a daily practice, quietly. one verse. one moment. one tap." | | | |
 | 7.27 | **Full description (4000 chars)** | ❌ not started | P0 | M |
@@ -326,7 +326,7 @@ The numbers are estimates for an experienced Flutter dev. They assume you have t
 |---|---|---|---|---|
 | 11.1 | SharedPreferences for state | ✅ done | P0 | — |
 | 11.2 | **Schema version key** | ❌ not started | P0 | S |
-| | Add `lock.schemaVersion` so future migrations can run. | | | |
+| | Add `hush.schemaVersion` so future migrations can run. | | | |
 | 11.3 | **Migration logic** | ❌ not started | P1 | M |
 | | When schema changes, run migrations in order. | | | |
 | 11.4 | **Backup / restore** | ❌ not started | P2 | L |
@@ -423,7 +423,7 @@ Things I made a call on that you might want to override:
 | **Closed-source product** | LICENSE is MIT for docs only | Open-source the product code under MIT if you want community contributions |
 | **No analytics** | Local-only, zero tracking | Add first-party events if needed |
 | **Inter (body) + DM Serif Display (display)** | Google Fonts | Self-host the fonts to avoid Google Fonts CDN dependency |
-| **App name: `lock.`** | Lowercase, with period | "Lock" (capitalized) or "Lock." (capitalized) — both more conventional in stores |
+| **App name: `hush.`** | Lowercase, with period | "Lock" (capitalized) or "Lock." (capitalized) — both more conventional in stores |
 | **Color: deep teal** | `#1F3D3A` | Adjust to e.g. `#1A3A37` if you want it slightly darker |
 
 ---
@@ -476,7 +476,7 @@ After both pass: the app is in production.
 |---|---|---|---|
 | Apple rejects for missing privacy policy | High | High | Host before submitting. |
 | Apple rejects for missing screenshot dimensions | Med | High | Use the right device-class sizes. |
-| Apple rejects for app name with punctuation | Low | Med | The period in `lock.` may be flagged. Have a fallback name ready. |
+| Apple rejects for app name with punctuation | Low | Med | The period in `hush.` may be flagged. Have a fallback name ready. |
 | Google rejects for missing data safety form | High | High | Complete it before submitting. |
 | Bible verse licensing issue (ESV) | Med | High | Use public-domain KJV / Reina-Valera 1960 at launch. |
 | First-frame paint is slow on low-end Android | Med | Med | Profile. R8 / ProGuard. Smaller images. |
@@ -506,6 +506,6 @@ The code is solid. The brand is locked. The CI is green. The next 5 working days
 
 The hard part isn't the code. The hard part is the privacy policy, the screenshots, and waiting for review.
 
-🔗 **https://github.com/albertlaudia/mx.pclub.lock**
+🔗 **https://github.com/albertlaudia/mx.pclub.hush**
 
 — end of analysis —

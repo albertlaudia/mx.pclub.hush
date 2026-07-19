@@ -8,7 +8,7 @@ import '../utils/streak_math.dart';
 /// never persisted; [setWindow] rejects it.
 enum PracticeWindow { unknown, morning, midday, evening, anytime }
 
-/// Minimal local state for `lock.`:
+/// Minimal local state for `hush.`:
 ///   - whether onboarding is complete
 ///   - the chosen practice window
 ///   - whether today has been practiced
@@ -46,10 +46,10 @@ class PracticeStateStore {
     return PracticeStateStore(prefs);
   }
 
-  static const _kOnboarded = 'lock.onboarded';
-  static const _kWindow = 'lock.window';
-  static const _kLastDay = 'lock.lastDay';
-  static const _kTotal = 'lock.total';
+  static const _kOnboarded = 'hush.onboarded';
+  static const _kWindow = 'hush.window';
+  static const _kLastDay = 'hush.lastDay';
+  static const _kTotal = 'hush.total';
 
   PracticeState read() {
     final onboarded = _prefs.getBool(_kOnboarded) ?? false;

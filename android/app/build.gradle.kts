@@ -5,7 +5,7 @@ plugins {
 }
 
 android {
-    namespace = "mx.pclub.lock"
+    namespace = "mx.pclub.hush"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -19,7 +19,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "mx.pclub.lock"
+        applicationId = "mx.pclub.hush"
         minSdk = 23
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode

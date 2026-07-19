@@ -1,5 +1,5 @@
-name: lock
-description: "lock. — a daily practice, quietly. Minimal v0.1: 3 screens, local-only, no backend."
+name: hush
+description: "hush. — a daily practice, quietly. Minimal v0.2: 3 screens, local-only, no backend."
 publish_to: 'none'
 version: 0.1.0+1
 

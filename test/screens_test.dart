@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:lock/core/storage/practice_state.dart';
-import 'package:lock/core/storage/practice_state_provider.dart';
-import 'package:lock/core/theme/app_theme.dart';
-import 'package:lock/core/ui/verse_preview.dart';
-import 'package:lock/core/utils/prompts.dart';
-import 'package:lock/features/home/home_screen.dart';
-import 'package:lock/features/onboarding/onboarding_screen.dart';
-import 'package:lock/features/practice/practice_screen.dart';
-import 'package:lock/features/settings/settings_screen.dart';
+import 'package:hush/core/storage/practice_state.dart';
+import 'package:hush/core/storage/practice_state_provider.dart';
+import 'package:hush/core/theme/app_theme.dart';
+import 'package:hush/core/ui/verse_preview.dart';
+import 'package:hush/core/utils/prompts.dart';
+import 'package:hush/features/home/home_screen.dart';
+import 'package:hush/features/onboarding/onboarding_screen.dart';
+import 'package:hush/features/practice/practice_screen.dart';
+import 'package:hush/features/settings/settings_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 /// Test helper: build a widget tree wrapped in ProviderScope with a
@@ -158,10 +158,10 @@ void main() {
 
     testWidgets('shows the practiced state when practiced today', (tester) async {
       SharedPreferences.setMockInitialValues({
-        'lock.onboarded': true,
-        'lock.window': PracticeWindow.morning.index,
-        'lock.lastDay': DateTime.now().toIso8601String().substring(0, 10),
-        'lock.total': 5,
+        'hush.onboarded': true,
+        'hush.window': PracticeWindow.morning.index,
+        'hush.lastDay': DateTime.now().toIso8601String().substring(0, 10),
+        'hush.total': 5,
       });
       final store = await PracticeStateStore.open();
       await tester.pumpWidget(
@@ -239,9 +239,9 @@ void main() {
   group('SettingsScreen', () {
     testWidgets('renders window, today, help links, and reset', (tester) async {
       SharedPreferences.setMockInitialValues({
-        'lock.onboarded': true,
-        'lock.window': PracticeWindow.evening.index,
-        'lock.total': 12,
+        'hush.onboarded': true,
+        'hush.window': PracticeWindow.evening.index,
+        'hush.total': 12,
       });
       final store = await PracticeStateStore.open();
       await tester.pumpWidget(
@@ -255,7 +255,7 @@ void main() {
 
       // Help section.
       expect(find.text('what is this?'), findsOneWidget);
-      expect(find.text('about lock.'), findsOneWidget);
+      expect(find.text('about hush.'), findsOneWidget);
 
       // Reset is at the bottom.
       expect(find.text('reset practice state'), findsOneWidget);

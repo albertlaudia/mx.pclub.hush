@@ -198,7 +198,7 @@ class _PracticeScreenState extends ConsumerState<PracticeScreen> {
     if (_completing) return;
     setState(() => _completing = true);
     // A single light haptic confirms the moment landed. The brand is
-    // tactile — "lock." is a verb, a closed book, a moment sealed.
+    // tactile — "hush." is a verb, a hush on the world, a moment sealed.
     HapticFeedback.lightImpact();
     try {
       await ref.read(practiceStateProvider.notifier).markPracticed();

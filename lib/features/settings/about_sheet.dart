@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../core/theme/app_theme.dart';
 
-/// About `lock.` — version, made by, open source licenses.
+/// About `hush.` — version, made by, open source licenses.
 ///
 /// Dev info goes here, behind a tap. The main settings page is for
 /// user actions, not for reading numbers.
@@ -31,7 +31,7 @@ class AboutSheet extends StatelessWidget {
             Center(child: BrandMark.wordmark(size: 28, color: AppColors.teal)),
             const SizedBox(height: 32),
             Text(
-              'about lock.',
+              'about hush.',
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.w400,
@@ -51,7 +51,7 @@ class AboutSheet extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             Text(
-              'lock. is a private journal for a daily moment of attention. '
+              'hush. is a private journal for a daily moment of attention. '
               'one verse a day. no streak. no score. no data leaves the phone.',
               style: TextStyle(
                 fontSize: 14,
@@ -64,7 +64,7 @@ class AboutSheet extends StatelessWidget {
               label: 'open source licenses',
               onTap: () => showLicensePage(
                 context: context,
-                applicationName: 'lock.',
+                applicationName: 'hush.',
                 applicationVersion: '0.1.0',
                 applicationIcon: Padding(
                   padding: const EdgeInsets.all(8.0),

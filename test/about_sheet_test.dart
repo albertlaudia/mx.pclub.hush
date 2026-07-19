@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:lock/core/theme/app_theme.dart';
-import 'package:lock/features/settings/about_sheet.dart';
+import 'package:hush/core/theme/app_theme.dart';
+import 'package:hush/features/settings/about_sheet.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -17,7 +17,7 @@ void main() {
     await tester.pumpAndSettle();
 
     // Headline.
-    expect(find.text('about lock.'), findsOneWidget);
+    expect(find.text('about hush.'), findsOneWidget);
     // Tagline.
     expect(find.text('a daily practice, quietly.'), findsOneWidget);
     // Brand-locked byline.
@@ -47,6 +47,6 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.text('open'));
     await tester.pumpAndSettle();
-    expect(find.text('about lock.'), findsOneWidget);
+    expect(find.text('about hush.'), findsOneWidget);
   });
 }

@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:lock/core/storage/practice_state.dart';
-import 'package:lock/core/utils/streak_math.dart';
+import 'package:hush/core/storage/practice_state.dart';
+import 'package:hush/core/utils/streak_math.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
@@ -111,7 +111,7 @@ void main() {
       // Simulate a stored last day that's yesterday.
       final yesterday = DateTime.now().subtract(const Duration(days: 1));
       SharedPreferences.setMockInitialValues({
-        'lock.lastDay': StreakMath.iso(yesterday),
+        'hush.lastDay': StreakMath.iso(yesterday),
       });
       final store = await PracticeStateStore.open();
       final stateBefore = store.read();
