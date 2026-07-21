@@ -26,6 +26,10 @@ dependencies:
   # Date / locale
   intl: ^0.20.2
 
+  # Open external URLs (mailto: for feedback, https: for privacy policy).
+  # Local-only data; no tracking.
+  url_launcher: ^6.3.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

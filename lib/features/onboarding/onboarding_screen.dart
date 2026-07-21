@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/storage/practice_state.dart';
 import '../../core/storage/practice_state_provider.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/ui/what_is_this_sheet.dart';
 import '../home/home_screen.dart';
 
 /// Onboarding — a single screen. Pick a practice window, then begin.
@@ -33,7 +34,11 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             children: [
               Align(
                 alignment: Alignment.centerLeft,
-                child: BrandMark.wordmark(size: 18),
+                child: BrandMark.wordmark(
+                  size: 18,
+                  color: AppColors.teal,
+                  accent: AppColors.amber,
+                ),
               ),
               const Spacer(flex: 1),
               const Text(
@@ -47,7 +52,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 ),
               ),
               const SizedBox(height: 12),
-              Text(
+              const Text(
                 'one short practice, once a day. that\'s the whole product.',
                 style: TextStyle(
                   fontSize: 15,
@@ -56,12 +61,13 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 ),
               ),
               const SizedBox(height: 40),
-              Text(
+              // Use inkSoft (AA on cream) for the prompt, not mute.
+              const Text(
                 'when do you want to practice?',
                 style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
-                  color: AppColors.mute,
+                  color: AppColors.inkSoft,
                   letterSpacing: 0.5,
                 ),
               ),
@@ -71,7 +77,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 detail: '6 – 9 am',
                 value: PracticeWindow.morning,
                 selected: _window == PracticeWindow.morning,
-                onTap: () => setState(() => _window = PracticeWindow.morning),
+                onTap: () => _select(PracticeWindow.morning),
               ),
               const SizedBox(height: 10),
               _WindowOption(
@@ -79,7 +85,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 detail: '11 am – 2 pm',
                 value: PracticeWindow.midday,
                 selected: _window == PracticeWindow.midday,
-                onTap: () => setState(() => _window = PracticeWindow.midday),
+                onTap: () => _select(PracticeWindow.midday),
               ),
               const SizedBox(height: 10),
               _WindowOption(
@@ -87,7 +93,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 detail: '8 – 10 pm',
                 value: PracticeWindow.evening,
                 selected: _window == PracticeWindow.evening,
-                onTap: () => setState(() => _window = PracticeWindow.evening),
+                onTap: () => _select(PracticeWindow.evening),
               ),
               const SizedBox(height: 10),
               _WindowOption(
@@ -95,12 +101,29 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 detail: 'no specific time',
                 value: PracticeWindow.anytime,
                 selected: _window == PracticeWindow.anytime,
-                onTap: () => setState(() => _window = PracticeWindow.anytime),
+                onTap: () => _select(PracticeWindow.anytime),
+              ),
+              const SizedBox(height: 20),
+              // "What is this?" affordance — new users want context
+              // before they commit. Same sheet as the home screen.
+              Center(
+                child: TextButton(
+                  onPressed: () => WhatIsThisSheet.show(context),
+                  child: const Text(
+                    'what is this?',
+                    style: TextStyle(
+                      color: AppColors.amberDark,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                      letterSpacing: 0.2,
+                    ),
+                  ),
+                ),
               ),
               const Spacer(flex: 2),
               ElevatedButton(
                 onPressed: _window == null || _saving ? null : _begin,
-                child: Text(_saving ? '...' : 'begin'),
+                child: Text(_saving ? 'saving' : 'begin'),
               ),
               const SizedBox(height: 16),
             ],
@@ -110,15 +133,33 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     );
   }
 
+  void _select(PracticeWindow w) {
+    if (_saving) return;
+    setState(() => _window = w);
+  }
+
   Future<void> _begin() async {
+    if (_window == null || _saving) return;
     setState(() => _saving = true);
     final notifier = ref.read(practiceStateProvider.notifier);
-    await notifier.setWindow(_window!);
-    await notifier.completeOnboarding();
-    if (!mounted) return;
-    Navigator.of(context).pushReplacement(
-      MaterialPageRoute(builder: (_) => const HomeScreen()),
-    );
+    try {
+      await notifier.setWindow(_window!);
+      await notifier.completeOnboarding();
+      if (!mounted) return;
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (_) => const HomeScreen()),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      // Reset the saving flag so the user can tap again. Show an
+      // error so they know what happened.
+      setState(() => _saving = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("couldn't save. try again."),
+        ),
+      );
+    }
   }
 }
 
@@ -172,19 +213,26 @@ class _WindowOption extends StatelessWidget {
                     detail,
                     style: TextStyle(
                       fontSize: 12,
-                      color: selected ? AppColors.cream.withValues(alpha: 0.7) : AppColors.mute,
+                      // Use amberDark/creamSoft for AA compliance in
+                      // both selected and unselected states.
+                      color: selected
+                          ? AppColors.creamSoft
+                          : AppColors.inkSoft,
                     ),
                   ),
                 ],
               ),
             ),
-            if (selected)
-              const Icon(Icons.check, color: AppColors.cream, size: 20)
-            else
-              Icon(Icons.circle_outlined, color: AppColors.mute, size: 20),
+            Icon(
+              selected ? Icons.check : Icons.circle_outlined,
+              color: selected ? AppColors.cream : AppColors.muteDark,
+              size: 20,
+            ),
           ],
         ),
       ),
     );
   }
 }
+
+

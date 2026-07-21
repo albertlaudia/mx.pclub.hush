@@ -7,14 +7,37 @@ class Prompt {
   final String id;
   final String ref; // e.g. "Psalm 46:10" or "prompt"
   final String text;
-  final String translation; // "ESV" or "open"
+  final String translation; // "ESV", "NIV", etc., or "open" for non-scripture
+
   const Prompt({
     required this.id,
     required this.ref,
     required this.text,
     required this.translation,
   });
-  bool get isVerse => translation != 'open';
+
+  /// A verse has a reference like "Book Chapter:Verse" (e.g. "Psalm 46:10")
+  /// — i.e., it contains a space (book name) and a colon (chapter:verse).
+  /// Non-verse prompts (future feature) would have a different format.
+  ///
+  /// The previous implementation checked `translation != 'open'`, but all
+  /// verses in the curated pool use ESV/NIV/KJV, and the check was a
+  /// tautology: every entry was always a "verse" because every entry had
+  /// a translation. This check is more robust.
+  bool get isVerse => ref.contains(':') && ref.contains(' ');
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    return other is Prompt &&
+        other.id == id &&
+        other.ref == ref &&
+        other.text == text &&
+        other.translation == translation;
+  }
+
+  @override
+  int get hashCode => Object.hash(id, ref, text, translation);
 }
 
 /// Loads a curated pool of verses, then deterministically picks one

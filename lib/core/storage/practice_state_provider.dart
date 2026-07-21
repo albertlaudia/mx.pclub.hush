@@ -36,5 +36,9 @@ class PracticeStateNotifier extends StateNotifier<PracticeState> {
 
 final practiceStateProvider =
     StateNotifierProvider<PracticeStateNotifier, PracticeState>((ref) {
-  return PracticeStateNotifier(ref.watch(practiceStoreProvider));
+  // ref.read (not ref.watch) — the store is opened once in main() and
+  // never changes. Using ref.watch would cause the notifier to be
+  // rebuilt every time the store reference changes, which is wasteful
+  // and would lose any in-flight state.
+  return PracticeStateNotifier(ref.read(practiceStoreProvider));
 });

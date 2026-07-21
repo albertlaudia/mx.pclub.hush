@@ -5,7 +5,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'core/storage/practice_state.dart';
 import 'core/storage/practice_state_provider.dart';
-import 'core/storage/practice_state.dart' show PracticeStateStore;
 import 'core/theme/app_theme.dart';
 import 'features/home/home_screen.dart';
 import 'features/onboarding/onboarding_screen.dart';

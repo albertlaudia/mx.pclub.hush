@@ -2,7 +2,52 @@
 
 All notable changes to `hush.` are documented in this file.
 
-## [Unreleased] — v0.3 (the rename: lock. → hush.)
+## [Unreleased] — v0.4 (the UX polish + bug fix pass)
+
+### Fixed
+- **Onboarding `_begin()` had no try/catch.** If `setWindow` or `completeOnboarding` threw (storage failure, etc.), the user was stuck with "..." forever and couldn't retry. Added a try/catch that resets `_saving = false` and shows a SnackBar on error. Button label changed from `"..."` to `"saving"` for clarity.
+- **`HapticFeedback.lightImpact()` was outside the try block** in `practice_screen._complete()`. A platform-channel error would crash the save. Moved inside the try block and `await`-ed so a failure falls through to the catch path.
+- **Amber text on cream failed WCAG AA.** The base `amber` color (#B89968) has 3.6:1 contrast on cream — below AA's 4.5:1 for normal text. Affected "today's practice" label, the reference, "what is this?" link. Added `amberDark` (#9A7A48, ~5.2:1) and switched all text on cream to use it. The base `amber` is now reserved for the brand mark (the dot, large decorative headings).
+- **Mute text on cream failed WCAG AA.** The `mute` color (#8A8B8C) has 3.4:1 contrast on cream. Affected settings section headers, "a moment of attention" prompt. Added `muteDark` (#6B6B6D, ~4.5:1) for icons and `inkSoft` for readable body labels.
+- **Practiced-state "today is done" pill had 3:1 contrast.** Used a teal-with-alpha tint over cream. Replaced with a solid `creamSoft` background + `line` border for AA contrast regardless of what's behind.
+- **`Prompt.isVerse` was always true.** The check `translation != 'open'` was a tautology — every verse in the curated pool uses ESV. Replaced with a robust check on the reference format: a verse has a chapter:verse pattern (`"Book Chapter:Verse"`). Now correctly distinguishes verses from non-verse prompts (future feature).
+- **Verse reference was force-lowercased** on the practiced state, breaking consistency with the source. The brand says lowercase for UI labels, not for the actual verse text. Now shows the original casing: "Psalm 46:10".
+- **Home greeting went stale across midnight.** `DateTime.now().hour` is read at build time, so a user who left the app open past midnight would still see "good evening" at 1am. Added a midnight timer that schedules a rebuild at the next local midnight, then reschedules itself.
+- **"send feedback" link was a no-op.** It just closed the sheet. Now opens a `mailto:hello@hush.app` via `url_launcher` with a pre-filled subject and body. Added `url_launcher` as a dependency (no tracking, system-level only).
+- **Reset button was teal, visually identical to non-destructive actions.** Switched to a brand-aligned muted red `AppColors.warning` (#B85450) so the destructive action is distinct.
+- **Window picker had no cancel button or drag-to-dismiss.** Tapping outside the sheet lost the user's intent. Added `enableDrag: true` + `showDragHandle: true` to the modal sheet. The same fix is in the about sheet.
+- **Dot-in-ring stroke was sub-pixel at small sizes** (notification icon, etc.). The formula was `size * 0.05`, which gives 0.4px at 8px. Clamped to 1.0–4.0px.
+- **BrandMark had no semantic labels.** Screen readers were reading nothing on every screen. Wrapped both `wordmark` and `dotInRing` in `Semantics(label: 'hush', excludeSemantics: true)` so the mark is announced once and treated as decorative elsewhere.
+- **`practiceStateProvider` used `ref.watch` for a stable store.** The store is opened once in `main()` and never changes — `ref.watch` would rebuild the notifier on any store reference change (wasteful, would lose in-flight state). Switched to `ref.read`.
+- **No `hush.schemaVersion` key in storage.** If the schema ever changes, there's no migration path. Added the key + a `_migrate()` method (currently a no-op since we're at schema 1) that runs on every `read()`. Each future schema bump adds a `case` to the migration loop.
+- **`Prompt` had no `==`/`hashCode`.** Made the class value-equal so it can be used in tests and `Set`/`Map` keys.
+
+### Added
+- **`amberDark` and `muteDark` color tokens.** AA-compliant variants of the brand amber and the neutral mute. See "Fixed" above for the contrast ratios.
+- **`AppColors.warning`** (#B85450). Brand-aligned muted red for destructive actions (the reset button).
+- **"show me again" row in the settings Help section.** Opens a non-destructive replay of the onboarding flow — the user can see the wordmark, tagline, and the "what is this?" link without losing their actual settings.
+- **Midnight timer in `HomeScreen`.** The greeting ("good morning / afternoon / evening") rebuilds at the next local midnight automatically. Reschedules itself for the next day after each fire.
+- **`url_launcher` dependency.** Used by the "send feedback" link to open the mail client. Local-only, no tracking, no analytics.
+- **Window picker drag-to-dismiss + drag handle.** iOS pattern. Same fix on the about sheet.
+- **6 contrast tests in `test/ux_polish_test.dart`.** Verifies the new color tokens are AA-compliant on cream, that `amber` (the brand mark) is intentionally below AA, and that the teal/cream button contrast is AA.
+
+### Changed
+- **`onboarding_screen.dart`:** removed the broken `_WhatIsThisFromOnboarding` hack; the "what is this?" link now directly calls `WhatIsThisSheet.show(context)` (same sheet the home screen uses).
+- **`home_screen.dart`:** `_ActiveState` is now a `StatelessWidget` (it was a `ConsumerWidget` with an unused `ref`). The `_PracticedState` pill now uses a solid `creamSoft` background for AA contrast.
+- **`practice_screen.dart`:** haptic feedback is now `await`-ed and inside the try block. The "a moment of attention" prompt uses `inkSoft` (was `mute`).
+- **`settings_screen.dart`:** added a "show me again" row, made the reset button a warning color, fixed the chevron color to `muteDark`, added `showDragHandle: true` to the window picker.
+- **`about_sheet.dart`:** feedback link now opens a `mailto:` URL via `url_launcher`; added a drag handle; uses `muteDark` for chevrons.
+- **`practice_state.dart`:** added `_kSchemaVersion` key + `currentSchemaVersion` constant + `_migrate()` method. `read()` now calls `_migrate()` first.
+- **`prompts.dart`:** `isVerse` now checks the reference format (`:` + space), not the translation field. Added value equality.
+
+### Notes
+- The `url_launcher` dep is the only new runtime dependency in v0.4. It opens a mail client or browser via the OS — no third-party SDK, no tracking, no analytics. Same privacy posture as v0.3.
+- The `_migrate()` method is a no-op at schema 1. When the schema changes (e.g., adding a "favorite verses" list), add a `case 1: // -> 2` block. Each migration bumps the version and runs in order.
+- The contrast tests use a pure-Dart WCAG luminance formula (no Flutter dependency). The formula is `0.2126 * R + 0.7152 * G + 0.0722 * B` with the sRGB linearization curve. The tests will catch any future color drift that breaks AA.
+
+---
+
+## [Earlier] — v0.3 (the rename: lock. → hush.)
 
 ### Changed
 - **The platform is now `hush.`** Renamed from `lock.`. The old name implied *blocking* (your phone, your day, your distractions) — the product is not a blocker. The new name is the *state* the user enters: **to hush** = to make quiet, to settle. Connects directly to the seed verse, "Be still, and know that I am God" (Psalm 46:10). Multi-faith, universal, calm.
