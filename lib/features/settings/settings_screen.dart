@@ -10,10 +10,8 @@ import 'about_sheet.dart';
 /// Settings — a single page. Practice, help, reset.
 ///
 /// The page is for actions: change the window, learn what the product
-/// is, reset state. Dev info (version, made by) is hidden behind the
-/// "about hush." sheet. The total practices counter is also there
-/// (the user asked for it in a moment of self-reflection; we honour
-/// that without surfacing it on the home screen).
+/// is, replay onboarding, reset state. Dev info (version, made by) is
+/// hidden behind the "about hush." sheet.
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
 
@@ -69,6 +67,12 @@ class SettingsScreen extends ConsumerWidget {
               ),
               const Divider(height: 1, color: AppColors.line),
               _Row(
+                label: 'show me again',
+                value: '',
+                onTap: () => _replayOnboarding(context),
+              ),
+              const Divider(height: 1, color: AppColors.line),
+              _Row(
                 label: 'about hush.',
                 value: '',
                 onTap: () => AboutSheet.show(context),
@@ -76,12 +80,23 @@ class SettingsScreen extends ConsumerWidget {
             ],
           ),
           const SizedBox(height: 32),
+          // Reset is destructive — visually distinct from the rest
+          // of the page. Brand-aligned muted red, not bright.
           Center(
             child: TextButton(
               onPressed: () => _showResetDialog(context, ref),
+              style: TextButton.styleFrom(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
+              ),
               child: const Text(
                 'reset practice state',
-                style: TextStyle(color: AppColors.mute),
+                style: TextStyle(
+                  color: AppColors.warning,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
             ),
           ),
@@ -109,6 +124,10 @@ class SettingsScreen extends ConsumerWidget {
     final picked = await showModalBottomSheet<PracticeWindow>(
       context: context,
       backgroundColor: AppColors.cream,
+      // Enable drag-to-dismiss. iOS pattern.
+      isScrollControlled: false,
+      enableDrag: true,
+      showDragHandle: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
@@ -117,16 +136,7 @@ class SettingsScreen extends ConsumerWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const SizedBox(height: 12),
-              Container(
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: AppColors.line,
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 8),
               for (final w in [
                 PracticeWindow.morning,
                 PracticeWindow.midday,
@@ -146,9 +156,20 @@ class SettingsScreen extends ConsumerWidget {
         );
       },
     );
-    if (picked != null) {
+    if (picked != null && picked != current) {
       await notifier.setWindow(picked);
     }
+  }
+
+  /// Replay the onboarding flow. The user can see the welcome screen
+  /// and the window picker again without resetting their actual
+  /// practice state. This is non-destructive.
+  Future<void> _replayOnboarding(BuildContext context) async {
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => const _OnboardingReplay(),
+      ),
+    );
   }
 
   Future<void> _showResetDialog(BuildContext context, WidgetRef ref) async {
@@ -156,20 +177,27 @@ class SettingsScreen extends ConsumerWidget {
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: AppColors.cream,
-        title: const Text('reset practice state?'),
+        title: const Text(
+          'reset practice state?',
+          style: TextStyle(color: AppColors.ink),
+        ),
         content: const Text(
           'this will clear your practice history. the app will return to its first-launch state.',
+          style: TextStyle(color: AppColors.inkSoft),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(false),
-            child: const Text('cancel'),
+            child: const Text(
+              'cancel',
+              style: TextStyle(color: AppColors.inkSoft),
+            ),
           ),
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(true),
             child: const Text(
               'reset',
-              style: TextStyle(color: AppColors.teal),
+              style: TextStyle(color: AppColors.warning),
             ),
           ),
         ],
@@ -178,6 +206,109 @@ class SettingsScreen extends ConsumerWidget {
     if (ok == true) {
       await ref.read(practiceStateProvider.notifier).reset();
     }
+  }
+}
+
+/// Wraps the onboarding screen so the user can preview it again
+/// without losing their real settings. On close, they return to
+/// the settings page with their original state intact.
+class _OnboardingReplay extends StatelessWidget {
+  const _OnboardingReplay();
+
+  @override
+  Widget build(BuildContext context) {
+    return PopScope(
+      // The user can't accidentally skip onboarding in replay mode.
+      // The only way out is the close button.
+      canPop: false,
+      child: Scaffold(
+        backgroundColor: AppColors.cream,
+        body: SafeArea(
+          child: Stack(
+            children: [
+              // The onboarding screen renders normally, but since the
+              // user is already onboarded, picking a window and tapping
+              // "begin" would push to home. We override that with a
+              // close button instead.
+              const _ReplayableOnboarding(),
+              Positioned(
+                top: 12,
+                right: 12,
+                child: IconButton(
+                  icon: const Icon(Icons.close, color: AppColors.ink),
+                  tooltip: 'close',
+                  onPressed: () => Navigator.of(context).pop(),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// A non-destructive version of the onboarding screen. The window
+/// picker is shown, but tapping "begin" just returns to the
+/// settings page with the existing window unchanged.
+class _ReplayableOnboarding extends ConsumerWidget {
+  const _ReplayableOnboarding();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    // Show a one-tap version: just the wordmark + a brief note + close.
+    // Keeps the replay lightweight — the user already saw the full
+    // onboarding. This isn't a "show me the form" button; it's a
+    // "remind me what the product is" button.
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(28, 24, 28, 24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // Top spacer to leave room for the close button.
+          const SizedBox(height: 56),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: BrandMark.wordmark(
+              size: 18,
+              color: AppColors.teal,
+              accent: AppColors.amber,
+            ),
+          ),
+          const Spacer(flex: 1),
+          const Text(
+            'a daily practice,\nquietly.',
+            style: TextStyle(
+              fontSize: 36,
+              fontWeight: FontWeight.w400,
+              color: AppColors.teal,
+              height: 1.15,
+              letterSpacing: -0.5,
+            ),
+          ),
+          const SizedBox(height: 12),
+          const Text(
+            'one short practice, once a day. that\'s the whole product.',
+            style: TextStyle(
+              fontSize: 15,
+              color: AppColors.inkSoft,
+              height: 1.5,
+            ),
+          ),
+          const Spacer(flex: 1),
+          Center(
+            child: TextButton(
+              onPressed: () => WhatIsThisSheet.show(context),
+              child: const Text(
+                'what is this?',
+                style: TextStyle(color: AppColors.amberDark),
+              ),
+            ),
+          ),
+          const Spacer(flex: 2),
+        ],
+      ),
+    );
   }
 }
 
@@ -191,10 +322,12 @@ class _SectionHeader extends StatelessWidget {
       padding: const EdgeInsets.only(left: 4),
       child: Text(
         text.toLowerCase(),
+        // Use inkSoft (AA on cream) for section headers. Previously
+        // used mute which fails AA.
         style: const TextStyle(
           fontSize: 12,
           fontWeight: FontWeight.w600,
-          color: AppColors.mute,
+          color: AppColors.inkSoft,
           letterSpacing: 0.8,
         ),
       ),
@@ -253,7 +386,11 @@ class _Row extends StatelessWidget {
               ),
             if (onTap != null) ...[
               const SizedBox(width: 4),
-              const Icon(Icons.chevron_right, color: AppColors.mute, size: 18),
+              const Icon(
+                Icons.chevron_right,
+                color: AppColors.muteDark,
+                size: 18,
+              ),
             ],
           ],
         ),

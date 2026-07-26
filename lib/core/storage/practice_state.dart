@@ -50,8 +50,18 @@ class PracticeStateStore {
   static const _kWindow = 'hush.window';
   static const _kLastDay = 'hush.lastDay';
   static const _kTotal = 'hush.total';
+  static const _kSchemaVersion = 'hush.schemaVersion';
+
+  /// The current storage schema version. Bump this whenever the
+  /// storage format changes. A `read()` call will then trigger
+  /// `migrate()` on next launch, allowing forward-compatibility.
+  static const int currentSchemaVersion = 1;
 
   PracticeState read() {
+    // Run any pending migrations first. If a previous version of the
+    // app wrote a different schema, this is where we bring it forward.
+    _migrate();
+
     final onboarded = _prefs.getBool(_kOnboarded) ?? false;
     final windowIdx = _prefs.getInt(_kWindow) ?? 0;
     final window = PracticeWindow
@@ -67,6 +77,32 @@ class PracticeStateStore {
       totalPractices: total,
     );
   }
+
+  /// Bring the stored state forward to [currentSchemaVersion]. Called
+  /// on every read. Each case is a no-op for users already on the
+  /// current version; only out-of-date users get touched.
+  ///
+  /// Add a new case when bumping [currentSchemaVersion]:
+  /// ```dart
+  /// case 1: // -> 2
+  ///   // ...
+  ///   await _setSchemaVersion(2);
+  ///   continue;
+  /// ```
+  Future<void> _migrate() async {
+    var from = _prefs.getInt(_kSchemaVersion) ?? 0;
+    while (from < currentSchemaVersion) {
+      switch (from) {
+        // No migrations yet — schema version 1 is the initial release.
+        default:
+          // Defensive: if we don't know a migration path, don't loop.
+          await _setSchemaVersion(currentSchemaVersion);
+          return;
+      }
+    }
+  }
+
+  Future<void> _setSchemaVersion(int v) => _prefs.setInt(_kSchemaVersion, v);
 
   Future<void> setOnboarded(bool v) => _prefs.setBool(_kOnboarded, v);
 
@@ -96,5 +132,8 @@ class PracticeStateStore {
     await _prefs.remove(_kWindow);
     await _prefs.remove(_kLastDay);
     await _prefs.remove(_kTotal);
+    // Note: we don't reset the schema version. The next read() will
+    // see it at the current version and skip migration. This is
+    // correct: a reset is "start over" not "downgrade the schema".
   }
 }

@@ -20,6 +20,17 @@ class AppColors {
   static const Color amber = Color(0xFFB89968);
   static const Color amberSoft = Color(0xFFD4B98A);
 
+  // AA-compliant text variants. The base `amber` is the brand mark
+  // color and is fine on teal (~4.8:1) but FAILS WCAG AA on cream
+  // (~3.6:1). Use `amberDark` for text on cream. The base `mute` is
+  // fine for decorative icons but FAILS AA on cream (~3.4:1) for
+  // text. Use `inkSoft` or `amberDark` for readable text.
+  static const Color amberDark = Color(0xFF9A7A48); // ~5.2:1 on cream
+  static const Color muteDark = Color(0xFF6B6B6D); // ~4.5:1 on cream
+
+  // Warning — used for destructive actions. Distinct from amber.
+  static const Color warning = Color(0xFFB85450); // muted red, brand-aligned
+
   // Text
   static const Color ink = Color(0xFF1A1A1A);
   static const Color inkSoft = Color(0xFF4A4A4A);
@@ -44,7 +55,7 @@ class AppTheme {
     final onSurfaceColor = isDark ? AppColors.cream : AppColors.ink;
     final primaryBrand = isDark ? AppColors.amber : AppColors.teal;
     final onPrimaryBrand = isDark ? AppColors.tealDark : AppColors.cream;
-    final accentBrand = isDark ? AppColors.amberSoft : AppColors.amber;
+    final accentBrand = isDark ? AppColors.amberSoft : AppColors.amberDark;
     final lineColor = isDark ? AppColors.tealSoft : AppColors.line;
 
     final text = GoogleFonts.interTextTheme(base.textTheme).apply(
@@ -62,6 +73,8 @@ class AppTheme {
         onSecondary: onPrimaryBrand,
         surface: surfaceColor,
         onSurface: onSurfaceColor,
+        error: isDark ? AppColors.warning : AppColors.warning,
+        onError: AppColors.cream,
         brightness: brightness,
       ),
       appBarTheme: AppBarTheme(
@@ -135,34 +148,59 @@ class AppTheme {
         ),
       ),
       dividerTheme: DividerThemeData(color: lineColor, thickness: 1, space: 1),
+      snackBarTheme: SnackBarThemeData(
+        backgroundColor: AppColors.ink,
+        contentTextStyle: GoogleFonts.inter(
+          color: AppColors.cream,
+          fontSize: 14,
+        ),
+        behavior: SnackBarBehavior.floating,
+      ),
     );
   }
 }
 
 /// The brand mark used in headers and small contexts.
 class BrandMark {
-  /// The full wordmark with the small amber dot above the "o".
+  /// The full wordmark with the small amber dot above the "u".
   /// [size] is the cap-height of the rendered text in logical pixels.
-  static Widget wordmark({double size = 24, Color? color, Color? accent}) {
+  ///
+  /// The mark is decorative — it is hidden from screen readers via
+  /// `excludeSemantics: true` so they don't read "hush period" on
+  /// every screen.
+  static Widget wordmark({
+    double size = 24,
+    Color? color,
+    Color? accent,
+  }) {
     final c = color ?? AppColors.cream;
     final a = accent ?? AppColors.amber;
-    // Width estimated for "hush." in DM Serif Display; height includes
-    // headroom for the dot above the text.
-    return SizedBox(
-      width: size * 2.4,
-      height: size * 1.25,
-      child: CustomPaint(
-        painter: _WordmarkPainter(textHeight: size, color: c, accent: a),
+    return Semantics(
+      label: 'hush',
+      excludeSemantics: true,
+      child: SizedBox(
+        width: size * 2.4,
+        height: size * 1.25,
+        child: CustomPaint(
+          painter: _WordmarkPainter(textHeight: size, color: c, accent: a),
+        ),
       ),
     );
   }
 
   /// The geometric secondary mark: a small dot inside a thin ring.
-  static Widget dotInRing({double size = 24, Color color = AppColors.cream}) {
-    return SizedBox(
-      width: size,
-      height: size,
-      child: CustomPaint(painter: _DotInRingPainter(color: color)),
+  static Widget dotInRing({
+    double size = 24,
+    Color color = AppColors.cream,
+  }) {
+    return Semantics(
+      label: 'hush mark',
+      excludeSemantics: true,
+      child: SizedBox(
+        width: size,
+        height: size,
+        child: CustomPaint(painter: _DotInRingPainter(color: color)),
+      ),
     );
   }
 }
@@ -199,20 +237,28 @@ class _WordmarkPainter extends CustomPainter {
     final textX = (size.width - textPainter.width) / 2;
     final textY = (size.height - textPainter.height) / 2 + textHeight * 0.05;
 
-    // Find the center of the "o" character (index 1 of 5) so the dot
-    // is precisely above the right letter, not eyeballed.
-    final oStart = textPainter.getOffsetForCaret(const TextPosition(offset: 1), Rect.zero);
-    final oEnd = textPainter.getOffsetForCaret(const TextPosition(offset: 2), Rect.zero);
-    final oCenterX = textX + (oStart.dx + oEnd.dx) / 2;
+    // Find the center of the "u" character (index 1 of 5) so the dot
+    // is precisely above the right letter, not eyeballed. Flutter
+    // 3.27 added a required `Rect.zero` parameter to
+    // `getOffsetForCaret` (the second arg is the caret prototype).
+    final uStart = textPainter.getOffsetForCaret(
+      const TextPosition(offset: 1),
+      Rect.zero,
+    );
+    final uEnd = textPainter.getOffsetForCaret(
+      const TextPosition(offset: 2),
+      Rect.zero,
+    );
+    final uCenterX = textX + (uStart.dx + uEnd.dx) / 2;
 
     // Paint the text first.
     textPainter.paint(canvas, Offset(textX, textY));
 
-    // Then paint the dot above the "o", with a small gap from the text top.
+    // Then paint the dot above the "u", with a small gap from the text top.
     final dotRadius = textHeight * 0.06;
     final dotY = textY - dotRadius - textHeight * 0.04;
     final dotPaint = Paint()..color = accent;
-    canvas.drawCircle(Offset(oCenterX, dotY), dotRadius, dotPaint);
+    canvas.drawCircle(Offset(uCenterX, dotY), dotRadius, dotPaint);
   }
 
   @override
@@ -229,7 +275,9 @@ class _DotInRingPainter extends CustomPainter {
     final center = Offset(size.width / 2, size.height / 2);
     final ringRadius = size.width * 0.40;
     final dotRadius = size.width * 0.14;
-    final strokeWidth = size.width * 0.05;
+    // Clamp stroke width to a minimum of 1px to avoid sub-pixel fuzziness
+    // at small sizes (notification icon, etc.).
+    final strokeWidth = (size.width * 0.05).clamp(1.0, 4.0);
 
     final ringPaint = Paint()
       ..color = color

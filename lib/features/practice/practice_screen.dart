@@ -92,13 +92,14 @@ class _PracticeScreenState extends ConsumerState<PracticeScreen> {
               ),
               const SizedBox(height: 24),
               // The "a moment of attention" prompt. Stays visible throughout.
-              // It's the cue that tells the user what to do.
+              // It's the cue that tells the user what to do. Use
+              // inkSoft (AA on cream) for the small label, not mute.
               const Text(
                 'a moment of attention.',
                 style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
-                  color: AppColors.mute,
+                  color: AppColors.inkSoft,
                   letterSpacing: 0.4,
                 ),
               ),
@@ -197,10 +198,12 @@ class _PracticeScreenState extends ConsumerState<PracticeScreen> {
   Future<void> _complete() async {
     if (_completing) return;
     setState(() => _completing = true);
-    // A single light haptic confirms the moment landed. The brand is
-    // tactile — "hush." is a verb, a hush on the world, a moment sealed.
-    unawaited(HapticFeedback.lightImpact());
     try {
+      // A single light haptic confirms the moment landed. The brand is
+      // tactile — "hush." is a verb, a hush on the world, a moment
+      // sealed. Wrapped in try so a platform-channel error doesn't
+      // crash the save.
+      await HapticFeedback.lightImpact();
       await ref.read(practiceStateProvider.notifier).markPracticed();
       if (!mounted) return;
       setState(() => _done = true);

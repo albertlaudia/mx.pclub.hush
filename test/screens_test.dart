@@ -171,8 +171,8 @@ void main() {
       expect(find.text('today is done'), findsOneWidget);
       expect(find.text('see you tomorrow.'), findsOneWidget);
       expect(find.text('begin'), findsNothing);
-      // Practiced state shows reference only, not full verse.
-      expect(find.textContaining('Psalm 46:10'.toLowerCase()), findsOneWidget);
+      // Practiced state shows reference with original casing.
+      expect(find.textContaining('Psalm 46:10'), findsOneWidget);
     });
   });
 
