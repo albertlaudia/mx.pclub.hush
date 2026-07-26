@@ -90,7 +90,7 @@ class PracticeStateStore {
   ///   continue;
   /// ```
   Future<void> _migrate() async {
-    var from = _prefs.getInt(_kSchemaVersion) ?? 0;
+    final from = _prefs.getInt(_kSchemaVersion) ?? 0;
     while (from < currentSchemaVersion) {
       switch (from) {
         // No migrations yet — schema version 1 is the initial release.

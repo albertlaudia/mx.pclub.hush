@@ -7,6 +7,8 @@
 ///   - Settings has the new "show me again" row
 ///   - About sheet has the feedback link
 ///   - Home screen midnight timer exists
+library;
+
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
