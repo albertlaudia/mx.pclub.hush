@@ -93,7 +93,7 @@ class _PracticeScreenState extends ConsumerState<PracticeScreen> {
               const SizedBox(height: 24),
               // The "a moment of attention" prompt. Stays visible throughout.
               // It's the cue that tells the user what to do.
-              Text(
+              const Text(
                 'a moment of attention.',
                 style: TextStyle(
                   fontSize: 13,
@@ -107,7 +107,7 @@ class _PracticeScreenState extends ConsumerState<PracticeScreen> {
                 _verseRevealed
                     ? 'read the verse. let it land. then continue.'
                     : 'read the verse when it appears. let it land.',
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 14,
                   color: AppColors.inkSoft,
                   height: 1.5,
@@ -124,7 +124,7 @@ class _PracticeScreenState extends ConsumerState<PracticeScreen> {
                       children: [
                         BrandMark.dotInRing(size: 18),
                         const SizedBox(width: 12),
-                        Text(
+                        const Text(
                           'see you tomorrow.',
                           style: TextStyle(
                             fontSize: 15,
@@ -199,7 +199,7 @@ class _PracticeScreenState extends ConsumerState<PracticeScreen> {
     setState(() => _completing = true);
     // A single light haptic confirms the moment landed. The brand is
     // tactile — "hush." is a verb, a hush on the world, a moment sealed.
-    HapticFeedback.lightImpact();
+    unawaited(HapticFeedback.lightImpact());
     try {
       await ref.read(practiceStateProvider.notifier).markPracticed();
       if (!mounted) return;
@@ -215,8 +215,8 @@ class _PracticeScreenState extends ConsumerState<PracticeScreen> {
       if (!mounted) return;
       setState(() => _completing = false);
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: const Text("couldn't save. try again."),
+        const SnackBar(
+          content: Text("couldn't save. try again."),
           backgroundColor: AppColors.ink,
           behavior: SnackBarBehavior.floating,
         ),

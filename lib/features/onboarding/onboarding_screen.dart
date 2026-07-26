@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -47,7 +49,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 ),
               ),
               const SizedBox(height: 12),
-              Text(
+              const Text(
                 'one short practice, once a day. that\'s the whole product.',
                 style: TextStyle(
                   fontSize: 15,
@@ -56,7 +58,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 ),
               ),
               const SizedBox(height: 40),
-              Text(
+              const Text(
                 'when do you want to practice?',
                 style: TextStyle(
                   fontSize: 13,
@@ -116,8 +118,10 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     await notifier.setWindow(_window!);
     await notifier.completeOnboarding();
     if (!mounted) return;
-    Navigator.of(context).pushReplacement(
-      MaterialPageRoute(builder: (_) => const HomeScreen()),
+    unawaited(
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute<void>(builder: (_) => const HomeScreen()),
+      ),
     );
   }
 }
@@ -181,7 +185,7 @@ class _WindowOption extends StatelessWidget {
             if (selected)
               const Icon(Icons.check, color: AppColors.cream, size: 20)
             else
-              Icon(Icons.circle_outlined, color: AppColors.mute, size: 20),
+              const Icon(Icons.circle_outlined, color: AppColors.mute, size: 20),
           ],
         ),
       ),

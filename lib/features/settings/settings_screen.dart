@@ -79,7 +79,7 @@ class SettingsScreen extends ConsumerWidget {
           Center(
             child: TextButton(
               onPressed: () => _showResetDialog(context, ref),
-              child: Text(
+              child: const Text(
                 'reset practice state',
                 style: TextStyle(color: AppColors.mute),
               ),
@@ -167,7 +167,7 @@ class SettingsScreen extends ConsumerWidget {
           ),
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(true),
-            child: Text(
+            child: const Text(
               'reset',
               style: TextStyle(color: AppColors.teal),
             ),
@@ -191,7 +191,7 @@ class _SectionHeader extends StatelessWidget {
       padding: const EdgeInsets.only(left: 4),
       child: Text(
         text.toLowerCase(),
-        style: TextStyle(
+        style: const TextStyle(
           fontSize: 12,
           fontWeight: FontWeight.w600,
           color: AppColors.mute,
@@ -246,14 +246,14 @@ class _Row extends StatelessWidget {
             if (value.isNotEmpty)
               Text(
                 value,
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 14,
                   color: AppColors.inkSoft,
                 ),
               ),
             if (onTap != null) ...[
               const SizedBox(width: 4),
-              Icon(Icons.chevron_right, color: AppColors.mute, size: 18),
+              const Icon(Icons.chevron_right, color: AppColors.mute, size: 18),
             ],
           ],
         ),

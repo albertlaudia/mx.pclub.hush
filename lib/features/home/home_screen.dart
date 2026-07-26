@@ -79,7 +79,7 @@ class _Header extends StatelessWidget {
         const SizedBox(height: 24),
         Text(
           greeting,
-          style: TextStyle(
+          style: const TextStyle(
             fontSize: 13,
             fontWeight: FontWeight.w600,
             color: AppColors.mute,
@@ -101,7 +101,7 @@ class _ActiveState extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
+        const Text(
           "today's practice",
           style: TextStyle(
             fontSize: 13,
@@ -136,7 +136,7 @@ class _ActiveState extends ConsumerWidget {
             ),
           ),
         ] else
-          Text(
+          const Text(
             'preparing today\'s practice…',
             style: TextStyle(
               fontSize: 16,
@@ -153,7 +153,7 @@ class _ActiveState extends ConsumerWidget {
             minimumSize: const Size(0, 0),
             tapTargetSize: MaterialTapTargetSize.shrinkWrap,
           ),
-          child: Text(
+          child: const Text(
             'what is this?',
             style: TextStyle(
               color: AppColors.amber,
@@ -170,7 +170,7 @@ class _ActiveState extends ConsumerWidget {
             onPressed: p == null
                 ? null
                 : () => Navigator.of(context).push(
-                      MaterialPageRoute(
+                      MaterialPageRoute<void>(
                         builder: (_) => PracticeScreen(prompt: p),
                       ),
                     ),
@@ -202,7 +202,7 @@ class _PracticedState extends StatelessWidget {
             children: [
               BrandMark.dotInRing(size: 14),
               const SizedBox(width: 8),
-              Text(
+              const Text(
                 'today is done',
                 style: TextStyle(
                   fontSize: 12,
@@ -215,9 +215,9 @@ class _PracticedState extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 16),
-        Text(
+        const Text(
           'see you tomorrow.',
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 28,
             fontWeight: FontWeight.w300,
             color: AppColors.teal,
@@ -232,7 +232,7 @@ class _PracticedState extends StatelessWidget {
           prompt == null
               ? 'today\'s practice is complete.'
               : "today's practice was ${prompt!.ref.toLowerCase()}.",
-          style: TextStyle(
+          style: const TextStyle(
             fontSize: 14,
             color: AppColors.inkSoft,
             height: 1.5,
@@ -249,7 +249,7 @@ class _SettingsLink extends StatelessWidget {
     return Center(
       child: TextButton(
         onPressed: () => Navigator.of(context).push(
-          MaterialPageRoute(builder: (_) => const SettingsScreen()),
+          MaterialPageRoute<void>(builder: (_) => const SettingsScreen()),
         ),
         child: const Text('settings'),
       ),

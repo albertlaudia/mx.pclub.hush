@@ -30,7 +30,7 @@ class AboutSheet extends StatelessWidget {
             ),
             Center(child: BrandMark.wordmark(size: 28, color: AppColors.teal)),
             const SizedBox(height: 32),
-            Text(
+            const Text(
               'about hush.',
               style: TextStyle(
                 fontSize: 24,
@@ -41,7 +41,7 @@ class AboutSheet extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 24),
-            Text(
+            const Text(
               'a daily practice, quietly.',
               style: TextStyle(
                 fontSize: 16,
@@ -50,7 +50,7 @@ class AboutSheet extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 16),
-            Text(
+            const Text(
               'hush. is a private journal for a daily moment of attention. '
               'one verse a day. no streak. no score. no data leaves the phone.',
               style: TextStyle(
@@ -82,7 +82,7 @@ class AboutSheet extends StatelessWidget {
               },
             ),
             const SizedBox(height: 24),
-            Center(
+            const Center(
               child: Text(
                 'made by pclub',
                 style: TextStyle(
@@ -135,7 +135,7 @@ class _Link extends StatelessWidget {
                 ),
               ),
             ),
-            Icon(Icons.chevron_right, color: AppColors.mute, size: 18),
+            const Icon(Icons.chevron_right, color: AppColors.mute, size: 18),
           ],
         ),
       ),

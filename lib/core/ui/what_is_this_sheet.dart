@@ -35,7 +35,7 @@ class WhatIsThisSheet extends StatelessWidget {
             ),
             BrandMark.wordmark(size: 22, color: AppColors.teal),
             const SizedBox(height: 32),
-            Text(
+            const Text(
               'what is this?',
               style: TextStyle(
                 fontSize: 24,
