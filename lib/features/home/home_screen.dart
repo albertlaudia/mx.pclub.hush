@@ -21,7 +21,15 @@ import '../settings/settings_screen.dart';
 /// No streak. No flame. No "extraordinary! your prayer journey is an
 /// inspiration" copy. The product is the practice.
 class HomeScreen extends ConsumerStatefulWidget {
-  const HomeScreen({super.key});
+  /// Test-only: an initial prompt to skip the async asset load. The
+  /// home screen still calls PromptPicker.today() on mount, but if
+  /// [initialPrompt] is set, the widget renders with that prompt
+  /// immediately. The async load will overwrite it when complete.
+  /// Used by tests where the asset bundle is empty and the async
+  /// load doesn't complete in fake time.
+  final Prompt? initialPrompt;
+  const HomeScreen({super.key, this.initialPrompt});
+
   @override
   ConsumerState<HomeScreen> createState() => _HomeScreenState();
 }
@@ -35,6 +43,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   void initState() {
     super.initState();
+    // If a test passed in an initial prompt, use it immediately. The
+    // async _loadPrompt() call below will overwrite it when complete,
+    // which is the right behavior in production (where there's no
+    // initialPrompt and the async load populates the real value).
+    _prompt = widget.initialPrompt;
     _loadPrompt();
     _scheduleMidnightRebuild();
   }
