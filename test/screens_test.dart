@@ -192,25 +192,22 @@ void main() {
         'hush.total': 5,
       });
       final store = await PracticeStateStore.open();
-      // Pre-populate the prompt cache so the home screen's _loadPrompt
-      // resolves from cache. The asset bundle is empty in tests; the
-      // fallback list (single Psalm 46:10 verse) is what we want.
-      // Force the cache load to actually complete in real time before
-      // the test pumpWidget runs.
-      await tester.runAsync(() async {
-        await PromptPicker.today();
-      });
-      await tester.pumpWidget(
-        _harness(child: const HomeScreen(), store: store),
+      // Bypass the async PromptPicker load: the asset bundle is empty
+      // in tests and the future doesn't always complete in fake time.
+      // The initialPrompt is the same fallback the production code
+      // would use when the asset fails to load.
+      const fallbackPrompt = Prompt(
+        id: 'fallback-1',
+        ref: 'Psalm 46:10',
+        text: 'Be still, and know that I am God.',
+        translation: 'ESV',
       );
-      // Give the home screen's initState _loadPrompt() time to resolve
-      // the cached future. The cache hit should complete in one
-      // microtask, but the test framework sometimes needs explicit
-      // pumping. 5 pumps with 50ms each gives 250ms of fake time which
-      // is more than enough for the cached future to resolve.
-      for (var i = 0; i < 5; i++) {
-        await tester.pump(const Duration(milliseconds: 50));
-      }
+      await tester.pumpWidget(
+        _harness(
+          child: const HomeScreen(initialPrompt: fallbackPrompt),
+          store: store,
+        ),
+      );
       await tester.pumpAndSettle();
       expect(find.text('today is done'), findsOneWidget);
       expect(find.text('see you tomorrow.'), findsOneWidget);
