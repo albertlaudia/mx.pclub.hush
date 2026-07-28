@@ -29,7 +29,14 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     return Scaffold(
       backgroundColor: AppColors.cream,
       body: SafeArea(
-        child: Padding(
+        // SingleChildScrollView: the onboarding has a fixed amount of
+        // content (4 window options + headlines + button) that overflows
+        // the screen on small devices (e.g. iPhone SE at 1x, or in tests
+        // with the default 800x600 surface). Wrap in a scroll view so
+        // the user can always reach the begin button. The Spacers were
+        // replaced with fixed SizedBoxes because Spacers don't work in
+        // scroll views.
+        child: SingleChildScrollView(
           padding: const EdgeInsets.fromLTRB(28, 24, 28, 24),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -42,7 +49,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                   accent: AppColors.amber,
                 ),
               ),
-              const Spacer(flex: 1),
+              const SizedBox(height: 56),
               const Text(
                 'a daily practice,\nquietly.',
                 style: TextStyle(
@@ -122,7 +129,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                   ),
                 ),
               ),
-              const Spacer(flex: 2),
+              const SizedBox(height: 40),
               ElevatedButton(
                 onPressed: _window == null || _saving ? null : _begin,
                 child: Text(_saving ? 'saving' : 'begin'),

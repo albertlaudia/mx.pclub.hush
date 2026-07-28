@@ -13,7 +13,20 @@ import 'package:hush/features/settings/settings_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 /// Test helper: build a widget tree wrapped in ProviderScope with a
-/// pre-populated PracticeStateStore.
+/// pre-populated PracticeStateStore. The surface size is set to a
+/// phone-ish 800x1600 because the default 800x600 doesn't fit the
+/// onboarding column (4 window options + headlines + button) on a
+/// real device at 1x, and even less in tests with padding. Setting
+/// it explicitly also makes the layout predictable in CI.
+Future<void> _setSurfaceSize(WidgetTester tester) async {
+  tester.view.physicalSize = const Size(800, 1600);
+  tester.view.devicePixelRatio = 1.0;
+  addTearDown(() {
+    tester.view.resetPhysicalSize();
+    tester.view.resetDevicePixelRatio();
+  });
+}
+
 Widget _harness({
   required Widget child,
   required PracticeStateStore store,
@@ -47,13 +60,15 @@ void main() {
     });
 
     test('truncates to the first 6 words with an ellipsis', () {
+      // 8 words total -> truncate to 6 + ellipsis.
       expect(
         versePreviewText('Be still, and know that I am God.'),
-        '"Be still, and know that I am…"',
+        '"Be still, and know that I…"',
       );
     });
 
     test('treats 6 words as a full preview', () {
+      // 6 words total -> no truncation, return as-is with quotes.
       expect(
         versePreviewText('Be still, and know that I am.'),
         '"Be still, and know that I am."',
@@ -88,6 +103,7 @@ void main() {
   group('OnboardingScreen', () {
     testWidgets('renders the wordmark, headline, and 4 window options',
         (tester) async {
+      await _setSurfaceSize(tester);
       final store = await _freshStore();
       await tester.pumpWidget(
         _harness(child: const OnboardingScreen(), store: store),
@@ -105,6 +121,7 @@ void main() {
     });
 
     testWidgets('enables begin after a window is picked', (tester) async {
+      await _setSurfaceSize(tester);
       final store = await _freshStore();
       await tester.pumpWidget(
         _harness(child: const OnboardingScreen(), store: store),
@@ -119,8 +136,17 @@ void main() {
   });
 
   group('HomeScreen', () {
+    setUp(() async {
+      // Preload the prompt cache so the home screen doesn't need to
+      // wait for the asset bundle (which is empty in tests). The
+      // PromptPicker has a hardcoded fallback that returns Psalm 46:10
+      // when the asset fails to load — that's the prompt used here.
+      await PromptPicker.today();
+    });
+
     testWidgets('shows the active state with verse preview + what-is-this link',
         (tester) async {
+      await _setSurfaceSize(tester);
       final store = await _freshStore(onboarded: true, window: PracticeWindow.morning);
       await tester.pumpWidget(
         _harness(child: const HomeScreen(), store: store),
@@ -143,6 +169,7 @@ void main() {
 
     testWidgets('tapping "what is this?" opens the explanation sheet',
         (tester) async {
+      await _setSurfaceSize(tester);
       final store = await _freshStore(onboarded: true, window: PracticeWindow.morning);
       await tester.pumpWidget(
         _harness(child: const HomeScreen(), store: store),
@@ -157,6 +184,7 @@ void main() {
     });
 
     testWidgets('shows the practiced state when practiced today', (tester) async {
+      await _setSurfaceSize(tester);
       SharedPreferences.setMockInitialValues({
         'hush.onboarded': true,
         'hush.window': PracticeWindow.morning.index,
@@ -185,6 +213,7 @@ void main() {
     );
 
     testWidgets('hides the verse for 800ms, then reveals it', (tester) async {
+      await _setSurfaceSize(tester);
       final store = await _freshStore();
       await tester.pumpWidget(
         _harness(
@@ -214,6 +243,7 @@ void main() {
 
     testWidgets('tapping continue shows "see you tomorrow" then auto-pops',
         (tester) async {
+      await _setSurfaceSize(tester);
       final store = await _freshStore(onboarded: true);
       await tester.pumpWidget(
         _harness(
@@ -238,6 +268,7 @@ void main() {
 
   group('SettingsScreen', () {
     testWidgets('renders window, today, help links, and reset', (tester) async {
+      await _setSurfaceSize(tester);
       SharedPreferences.setMockInitialValues({
         'hush.onboarded': true,
         'hush.window': PracticeWindow.evening.index,
@@ -267,6 +298,7 @@ void main() {
 
     testWidgets('tapping "what is this?" opens the sheet from settings too',
         (tester) async {
+      await _setSurfaceSize(tester);
       final store = await _freshStore(onboarded: true);
       await tester.pumpWidget(
         _harness(child: const SettingsScreen(), store: store),

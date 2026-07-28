@@ -25,7 +25,9 @@ class AppColors {
   // (~3.6:1). Use `amberDark` for text on cream. The base `mute` is
   // fine for decorative icons but FAILS AA on cream (~3.4:1) for
   // text. Use `inkSoft` or `amberDark` for readable text.
-  static const Color amberDark = Color(0xFF9A7A48); // ~5.2:1 on cream
+  // The previous `amberDark` (0xFF9A7A48) was 3.5:1 on cream — failed
+  // AA. 0xFF7A5F2D measures 5.3:1, comfortably above AA's 4.5:1.
+  static const Color amberDark = Color(0xFF7A5F2D); // ~5.3:1 on cream
   static const Color muteDark = Color(0xFF6B6B6D); // ~4.5:1 on cream
 
   // Warning — used for destructive actions. Distinct from amber.

@@ -150,6 +150,12 @@ void main() {
   group('Onboarding error handling', () {
     testWidgets('the begin button toggles between "begin" and "saving"',
         (tester) async {
+      tester.view.physicalSize = const Size(800, 1600);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
       SharedPreferences.setMockInitialValues({});
       final store = await PracticeStateStore.open();
 
@@ -173,6 +179,12 @@ void main() {
   group('Settings new "show me again" row', () {
     testWidgets('renders the show-me-again row in the help section',
         (tester) async {
+      tester.view.physicalSize = const Size(800, 1600);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
       final store = await _freshStore(onboarded: true, window: PracticeWindow.morning);
       await tester.pumpWidget(
         _harness(child: const SettingsScreen(), store: store),
@@ -188,6 +200,12 @@ void main() {
 
     testWidgets('tapping show me again opens a replayable onboarding',
         (tester) async {
+      tester.view.physicalSize = const Size(800, 1600);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
       final store = await _freshStore(onboarded: true, window: PracticeWindow.morning);
       await tester.pumpWidget(
         _harness(child: const SettingsScreen(), store: store),
@@ -216,6 +234,14 @@ void main() {
   group('Home midnight timer', () {
     testWidgets('the home screen renders a greeting that matches the hour',
         (tester) async {
+      tester.view.physicalSize = const Size(800, 1600);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+      // Preload the prompt cache (see screens_test.dart for why).
+      await PromptPicker.today();
       final store = await _freshStore(onboarded: true, window: PracticeWindow.morning);
       await tester.pumpWidget(
         _harness(child: const HomeScreen(), store: store),
