@@ -23,7 +23,11 @@ jobs:
         uses: subosito/flutter-action@v2
         with:
           channel: stable
-          flutter-version: '3.27.0'
+          # Bumped from 3.27.0 to 3.32.0 (Dart 3.8) so the CI can
+          # resolve the latest deps (flutter_lints 6.x, google_fonts 8.x,
+          # flutter_riverpod 3.x) which all require Dart ^3.7.0 or newer.
+          # See commit "Fix CI: bump Flutter to 3.32.0".
+          flutter-version: '3.32.0'
           cache: true
 
       - name: Install dependencies

@@ -42,9 +42,10 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  # Pinned to ^5.0.0 because the CI is on Flutter 3.27.0 (Dart 3.6.0)
-  # and flutter_lints 6.0.0 requires Dart ^3.8.0. See commit
-  # "Fix CI: pin flutter_lints to 5.0.0".
+  # flutter_lints 6.0.0 requires Dart ^3.8.0. The CI is on Flutter
+  # 3.32.0 (Dart 3.8) after the v0.4.1 CI bump. We can use 6.0.0
+  # here, but keep 5.0.0 to be conservative — no compelling reason
+  # to upgrade until we need a new lint.
   flutter_lints: ^5.0.0
 
 flutter:
