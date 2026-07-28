@@ -192,12 +192,20 @@ void main() {
         'hush.total': 5,
       });
       final store = await PracticeStateStore.open();
+      // Pre-populate the prompt cache so _loadPrompt resolves from
+      // cache (the asset is empty in tests; the fallback is Psalm 46:10).
+      // We call today() twice — first to populate the cache, then to
+      // resolve the future inside the home's _loadPrompt.
+      await PromptPicker.today();
       await tester.pumpWidget(
         _harness(child: const HomeScreen(), store: store),
       );
-      // runAsync lets the real async work (rootBundle.loadString for
-      // PromptPicker) complete in real time. pumpAndSettle uses fake
-      // time, which doesn't always let cross-isolate Futures resolve.
+      // Multiple pumps to drain microtasks — the cached prompt should
+      // resolve in 1-2 microtasks but the test framework sometimes
+      // needs an explicit runAsync to process cross-isolate futures.
+      for (var i = 0; i < 5; i++) {
+        await tester.pump();
+      }
       await tester.runAsync(() async {
         await Future<void>.delayed(const Duration(milliseconds: 50));
       });
