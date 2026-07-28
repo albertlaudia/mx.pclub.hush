@@ -6,47 +6,55 @@ final practiceStoreProvider = Provider<PracticeStateStore>((ref) {
   throw UnimplementedError('practiceStoreProvider must be overridden in main()');
 });
 
-class PracticeStateNotifier extends StateNotifier<PracticeState> {
-  PracticeStateNotifier(this._store) : super(_store.read());
-  final PracticeStateStore _store;
+/// Riverpod 3.x: `Notifier` replaces the deprecated `StateNotifier`.
+/// The pattern is similar: `build()` returns the initial state,
+/// methods mutate `state` and trigger rebuilds.
+class PracticeStateNotifier extends Notifier<PracticeState> {
+  @override
+  PracticeState build() {
+    // Read the store once on first build. Each method re-reads it
+    // for fresh data (cheap — SharedPreferences is in-memory cached).
+    return ref.read(practiceStoreProvider).read();
+  }
 
   Future<void> setWindow(PracticeWindow w) async {
-    await _store.setWindow(w);
-    state = _store.read();
+    final store = ref.read(practiceStoreProvider);
+    await store.setWindow(w);
+    state = store.read();
   }
 
   Future<void> completeOnboarding() async {
-    await _store.setOnboarded(true);
-    state = _store.read();
+    final store = ref.read(practiceStoreProvider);
+    await store.setOnboarded(true);
+    state = store.read();
   }
 
   /// Returns true if the practice was newly recorded, false if it was
   /// already counted today (idempotent).
   Future<bool> markPracticed() async {
-    final changed = await _store.markPracticed();
-    state = _store.read();
+    final store = ref.read(practiceStoreProvider);
+    final changed = await store.markPracticed();
+    state = store.read();
     return changed;
   }
 
   Future<void> reset() async {
-    await _store.reset();
-    state = _store.read();
+    final store = ref.read(practiceStoreProvider);
+    await store.reset();
+    state = store.read();
   }
 
   /// Set the "deeper practice" mode. The caller (settings UI) is
   /// responsible for wiring the actual hooks — this just persists
   /// the preference and updates the in-memory state.
   Future<void> setDeeperPractice(bool enabled) async {
-    await _store.setDeeperPractice(enabled);
-    state = _store.read();
+    final store = ref.read(practiceStoreProvider);
+    await store.setDeeperPractice(enabled);
+    state = store.read();
   }
 }
 
 final practiceStateProvider =
-    StateNotifierProvider<PracticeStateNotifier, PracticeState>((ref) {
-  // ref.read (not ref.watch) — the store is opened once in main() and
-  // never changes. Using ref.watch would cause the notifier to be
-  // rebuilt every time the store reference changes, which is wasteful
-  // and would lose any in-flight state.
-  return PracticeStateNotifier(ref.read(practiceStoreProvider));
-});
+    NotifierProvider<PracticeStateNotifier, PracticeState>(
+  PracticeStateNotifier.new,
+);

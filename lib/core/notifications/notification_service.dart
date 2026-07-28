@@ -102,8 +102,12 @@ class NotificationService {
       _channelId,
       _channelName,
       channelDescription: _channelDescription,
-      importance: Importance.default,
-      priority: Priority.default,
+      // `default` is a Dart reserved word, so the enum value was
+      // renamed to `defaultImportance` in flutter_local_notifications
+      // 16.x+. Same for Priority.defaultPriority. We use the
+      // "default" tier (low priority, no sound) — on-brand.
+      importance: Importance.defaultImportance,
+      priority: Priority.defaultPriority,
       // No sound. The brand is quiet. The notification is a quiet
       // nudge, not an alert. The visual alone is the cue.
       playSound: false,
