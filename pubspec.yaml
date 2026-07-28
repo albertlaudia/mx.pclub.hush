@@ -21,7 +21,10 @@ dependencies:
   shared_preferences: ^2.3.2
 
   # Fonts
-  google_fonts: ^8.2.0
+  # Pinned to ^6.2.1 because google_fonts 8.x requires Dart ^3.10.0
+  # and the CI is on Flutter 3.27.0 (Dart 3.6.0). When the CI
+  # Flutter is bumped to 3.32+, this can be relaxed to ^8.0.0.
+  google_fonts: ^6.2.1
 
   # Date / locale
   intl: ^0.20.2
