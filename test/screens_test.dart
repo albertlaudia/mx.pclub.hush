@@ -70,8 +70,8 @@ void main() {
     test('treats 6 words as a full preview', () {
       // 6 words total -> no truncation, return as-is with quotes.
       expect(
-        versePreviewText('Be still, and know that I am.'),
-        '"Be still, and know that I am."',
+        versePreviewText('Be still and know that I am.'),
+        '"Be still and know that I am."',
       );
     });
   });
@@ -195,6 +195,12 @@ void main() {
       await tester.pumpWidget(
         _harness(child: const HomeScreen(), store: store),
       );
+      // Let the async prompt load complete. The PromptPicker cache was
+      // primed in setUp() with Psalm 46:10 (the fallback), so the
+      // home's _loadPrompt() should resolve quickly — but we still need
+      // to pump enough times for the microtask queue to drain.
+      await tester.pump();
+      await tester.pump();
       await tester.pumpAndSettle();
       expect(find.text('today is done'), findsOneWidget);
       expect(find.text('see you tomorrow.'), findsOneWidget);
@@ -251,8 +257,10 @@ void main() {
           store: store,
         ),
       );
-      // Wait for the verse to reveal.
-      await tester.pumpAndSettle();
+      // pumpAndSettle uses 0-duration pumps, which doesn't fire the
+      // 800ms reveal Timer (real timers need explicit duration pumps).
+      // So pump explicitly to advance fake time past the reveal.
+      await tester.pump(const Duration(milliseconds: 1000));
       expect(find.widgetWithText(ElevatedButton, 'continue'), findsOneWidget);
 
       await tester.tap(find.widgetWithText(ElevatedButton, 'continue'));
