@@ -192,23 +192,25 @@ void main() {
         'hush.total': 5,
       });
       final store = await PracticeStateStore.open();
-      // Pre-populate the prompt cache so _loadPrompt resolves from
-      // cache (the asset is empty in tests; the fallback is Psalm 46:10).
-      // We call today() twice — first to populate the cache, then to
-      // resolve the future inside the home's _loadPrompt.
-      await PromptPicker.today();
+      // Pre-populate the prompt cache so the home screen's _loadPrompt
+      // resolves from cache. The asset bundle is empty in tests; the
+      // fallback list (single Psalm 46:10 verse) is what we want.
+      // Force the cache load to actually complete in real time before
+      // the test pumpWidget runs.
+      await tester.runAsync(() async {
+        await PromptPicker.today();
+      });
       await tester.pumpWidget(
         _harness(child: const HomeScreen(), store: store),
       );
-      // Multiple pumps to drain microtasks — the cached prompt should
-      // resolve in 1-2 microtasks but the test framework sometimes
-      // needs an explicit runAsync to process cross-isolate futures.
+      // Give the home screen's initState _loadPrompt() time to resolve
+      // the cached future. The cache hit should complete in one
+      // microtask, but the test framework sometimes needs explicit
+      // pumping. 5 pumps with 50ms each gives 250ms of fake time which
+      // is more than enough for the cached future to resolve.
       for (var i = 0; i < 5; i++) {
-        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 50));
       }
-      await tester.runAsync(() async {
-        await Future<void>.delayed(const Duration(milliseconds: 50));
-      });
       await tester.pumpAndSettle();
       expect(find.text('today is done'), findsOneWidget);
       expect(find.text('see you tomorrow.'), findsOneWidget);
