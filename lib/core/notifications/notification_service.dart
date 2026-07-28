@@ -128,11 +128,15 @@ class NotificationService {
       details,
       payload: _payloadFor(window),
       androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+      // wallClockTime = fire at 8pm local time regardless of
+      // timezone changes (the user picked a wall-clock time).
+      // The alternative, absoluteTime, would re-anchor to the
+      // timezone the user was in when they toggled the switch.
+      // wallClockTime matches the brand: quiet, predictable.
+      uiLocalNotificationDateInterpretation:
+          UILocalNotificationDateInterpretation.wallClockTime,
       // Repeat daily. The plugin uses the same fire time every 24h.
       matchDateTimeComponents: DateTimeComponents.time,
-      // uiLocalNotificationDateInterpretation was required in older
-      // versions of flutter_local_notifications; 17.x removed it.
-      // (Keeping the comment as a breadcrumb for future readers.)
     );
   }
 
