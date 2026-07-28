@@ -130,6 +130,9 @@ class NotificationService {
       androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
       // Repeat daily. The plugin uses the same fire time every 24h.
       matchDateTimeComponents: DateTimeComponents.time,
+      // uiLocalNotificationDateInterpretation was required in older
+      // versions of flutter_local_notifications; 17.x removed it.
+      // (Keeping the comment as a breadcrumb for future readers.)
     );
   }
 
