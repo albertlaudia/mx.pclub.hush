@@ -70,8 +70,8 @@ void main() {
     test('treats 6 words as a full preview', () {
       // 6 words total -> no truncation, return as-is with quotes.
       expect(
-        versePreviewText('Be still and know that I am.'),
-        '"Be still and know that I am."',
+        versePreviewText('Be still and know that I.'),
+        '"Be still and know that I."',
       );
     });
   });
@@ -195,12 +195,12 @@ void main() {
       await tester.pumpWidget(
         _harness(child: const HomeScreen(), store: store),
       );
-      // Let the async prompt load complete. The PromptPicker cache was
-      // primed in setUp() with Psalm 46:10 (the fallback), so the
-      // home's _loadPrompt() should resolve quickly — but we still need
-      // to pump enough times for the microtask queue to drain.
-      await tester.pump();
-      await tester.pump();
+      // runAsync lets the real async work (rootBundle.loadString for
+      // PromptPicker) complete in real time. pumpAndSettle uses fake
+      // time, which doesn't always let cross-isolate Futures resolve.
+      await tester.runAsync(() async {
+        await Future<void>.delayed(const Duration(milliseconds: 50));
+      });
       await tester.pumpAndSettle();
       expect(find.text('today is done'), findsOneWidget);
       expect(find.text('see you tomorrow.'), findsOneWidget);
@@ -265,10 +265,15 @@ void main() {
 
       await tester.tap(find.widgetWithText(ElevatedButton, 'continue'));
 
-      // Pump enough for the async markPracticed to complete and the
-      // state to update, but NOT enough to trigger the 1500ms auto-pop.
+      // The _complete() flow awaits HapticFeedback (platform channel)
+      // then markPracticed (SharedPreferences setString/setInt). These
+      // use real async that doesn't always complete in fake time. Use
+      // runAsync to let them complete in real time, but only briefly so
+      // the 1500ms auto-pop doesn't fire.
+      await tester.runAsync(() async {
+        await Future<void>.delayed(const Duration(milliseconds: 50));
+      });
       await tester.pump();
-      await tester.pump(const Duration(milliseconds: 100));
 
       expect(find.text('see you tomorrow.'), findsOneWidget);
     });
