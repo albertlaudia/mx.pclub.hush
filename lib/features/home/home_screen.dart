@@ -43,12 +43,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    // If a test passed in an initial prompt, use it immediately. The
-    // async _loadPrompt() call below will overwrite it when complete,
-    // which is the right behavior in production (where there's no
-    // initialPrompt and the async load populates the real value).
-    _prompt = widget.initialPrompt;
-    _loadPrompt();
+    // If a test passed in an initial prompt, use it immediately and
+    // skip the async _loadPrompt() entirely. The test environment has
+    // an empty asset bundle and the async load doesn't complete in the
+    // test framework's fake time, so we'd otherwise see the "preparing
+    // today's practice..." loading state forever.
+    if (widget.initialPrompt != null) {
+      _prompt = widget.initialPrompt;
+    } else {
+      _loadPrompt();
+    }
     _scheduleMidnightRebuild();
   }
 
