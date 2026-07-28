@@ -1,7 +1,7 @@
 name: hush
-description: "hush. — a daily practice, quietly. Minimal v0.2: 3 screens, local-only, no backend."
+description: "hush. — a daily practice, quietly. Minimal v0.4: 3 screens, local-only, no backend, opt-in daily notification."
 publish_to: 'none'
-version: 0.1.0+1
+version: 0.4.0+1
 
 environment:
   sdk: ^3.5.0
@@ -30,10 +30,19 @@ dependencies:
   # Local-only data; no tracking.
   url_launcher: ^6.3.0
 
+  # Local daily notification (opt-in, brand-aligned copy). The
+  # notification is the single highest-leverage addition to make
+  # hush. findable without abandoning the philosophy.
+  flutter_local_notifications: ^17.2.4
+  timezone: ^0.9.4
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^6.0.0
+  # Pinned to ^5.0.0 because the CI is on Flutter 3.27.0 (Dart 3.6.0)
+  # and flutter_lints 6.0.0 requires Dart ^3.8.0. See commit
+  # "Fix CI: pin flutter_lints to 5.0.0".
+  flutter_lints: ^5.0.0
 
 flutter:
   uses-material-design: true

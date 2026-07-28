@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../core/notifications/notification_service.dart';
 import '../../core/storage/practice_state.dart';
 import '../../core/storage/practice_state_provider.dart';
 import '../../core/theme/app_theme.dart';
@@ -10,8 +11,9 @@ import 'about_sheet.dart';
 /// Settings — a single page. Practice, help, reset.
 ///
 /// The page is for actions: change the window, learn what the product
-/// is, replay onboarding, reset state. Dev info (version, made by) is
-/// hidden behind the "about hush." sheet.
+/// is, replay onboarding, opt into "deeper practice" (the umbrella
+/// for opt-in hooks), reset state. Dev info is hidden behind the
+/// "about hush." sheet.
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
 
@@ -77,6 +79,30 @@ class SettingsScreen extends ConsumerWidget {
                 value: '',
                 onTap: () => AboutSheet.show(context),
               ),
+            ],
+          ),
+          const SizedBox(height: 32),
+          const _SectionHeader('deeper practice'),
+          const SizedBox(height: 8),
+          // "deeper practice" is the umbrella for opt-in hooks. The
+          // user enables it once; the daily notification is the
+          // first hook, future home widget + lock screen widget will
+          // respect the same flag. The default is off — the brand
+          // is voluntary until the user chooses otherwise.
+          const Padding(
+            padding: EdgeInsets.only(left: 4, bottom: 12),
+            child: Text(
+              'opt into gentle hooks: a quiet daily reminder. the app stays quiet until you open it.',
+              style: TextStyle(
+                fontSize: 12,
+                color: AppColors.inkSoft,
+                height: 1.5,
+              ),
+            ),
+          ),
+          _Card(
+            children: [
+              _DeeperPracticeRow(),
             ],
           ),
           const SizedBox(height: 32),
@@ -158,6 +184,13 @@ class SettingsScreen extends ConsumerWidget {
     );
     if (picked != null && picked != current) {
       await notifier.setWindow(picked);
+      // If the user has opted into deeper practice, reschedule the
+      // daily notification to fire at the new window. Without
+      // this, the notification would still fire at the old time.
+      final deeper = ref.read(practiceStateProvider).deeperPractice;
+      if (deeper) {
+        await NotificationService.instance.scheduleDaily(picked);
+      }
     }
   }
 
@@ -306,6 +339,104 @@ class _ReplayableOnboarding extends ConsumerWidget {
             ),
           ),
           const Spacer(flex: 2),
+        ],
+      ),
+    );
+  }
+}
+
+/// "deeper practice" toggle row. When the user enables it, the
+/// daily notification is scheduled (and future opt-in hooks like
+/// home widget + lock screen widget will respect the same flag).
+/// When disabled, all scheduled hooks are cancelled.
+class _DeeperPracticeRow extends ConsumerStatefulWidget {
+  const _DeeperPracticeRow();
+
+  @override
+  ConsumerState<_DeeperPracticeRow> createState() => _DeeperPracticeRowState();
+}
+
+class _DeeperPracticeRowState extends ConsumerState<_DeeperPracticeRow> {
+  bool _busy = false;
+
+  Future<void> _toggle(bool value) async {
+    if (_busy) return;
+    setState(() => _busy = true);
+    final notifier = ref.read(practiceStateProvider.notifier);
+    final window = ref.read(practiceStateProvider).window;
+    try {
+      if (value) {
+        // Request permission first; the user can still see the
+        // toggle in either state, but the notification only fires
+        // if permission is granted.
+        final granted = await NotificationService.instance.requestPermission();
+        if (!mounted) return;
+        if (granted) {
+          await NotificationService.instance.scheduleDaily(window);
+        } else {
+          // Permission denied. The user can change their mind in
+          // system settings; we still set the preference so the
+          // hook activates when they grant permission later. (The
+          // next time they open the app, we'd re-check and
+          // schedule.) For now, schedule anyway — if permission is
+          // missing, the system silently drops the notification.
+          await NotificationService.instance.scheduleDaily(window);
+        }
+      } else {
+        await NotificationService.instance.cancel();
+      }
+      await notifier.setDeeperPractice(value);
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("couldn't change. try again."),
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final enabled = ref.watch(practiceStateProvider).deeperPractice;
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'daily reminder',
+                  style: TextStyle(
+                    fontSize: 15,
+                    color: AppColors.ink,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  enabled
+                      ? 'a quiet nudge at your window.'
+                      : 'opt in for a gentle daily nudge.',
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: AppColors.inkSoft,
+                    height: 1.4,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Switch(
+            value: enabled,
+            onChanged: _busy ? null : _toggle,
+            activeColor: AppColors.teal,
+            inactiveTrackColor: AppColors.line,
+          ),
         ],
       ),
     );

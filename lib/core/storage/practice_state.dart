@@ -13,6 +13,10 @@ enum PracticeWindow { unknown, morning, midday, evening, anytime }
 ///   - the chosen practice window
 ///   - whether today has been practiced
 ///   - the total number of practices
+///   - whether the user has opted into "deeper practice" (the umbrella
+///     for opt-in hooks like daily notification, future home widget,
+///     future lock screen widget). Default false — brand is voluntary
+///     until the user chooses otherwise.
 ///
 /// No streak counter. No mood. No "best". No week row. The product is
 /// the practice, not the score.
@@ -21,12 +25,14 @@ class PracticeState {
   final PracticeWindow window;
   final bool practicedToday;
   final int totalPractices;
+  final bool deeperPractice;
 
   const PracticeState({
     required this.onboarded,
     required this.window,
     required this.practicedToday,
     required this.totalPractices,
+    this.deeperPractice = false,
   });
 
   static const empty = PracticeState(
@@ -34,7 +40,24 @@ class PracticeState {
     window: PracticeWindow.unknown,
     practicedToday: false,
     totalPractices: 0,
+    deeperPractice: false,
   );
+
+  PracticeState copyWith({
+    bool? onboarded,
+    PracticeWindow? window,
+    bool? practicedToday,
+    int? totalPractices,
+    bool? deeperPractice,
+  }) {
+    return PracticeState(
+      onboarded: onboarded ?? this.onboarded,
+      window: window ?? this.window,
+      practicedToday: practicedToday ?? this.practicedToday,
+      totalPractices: totalPractices ?? this.totalPractices,
+      deeperPractice: deeperPractice ?? this.deeperPractice,
+    );
+  }
 }
 
 class PracticeStateStore {
@@ -50,6 +73,7 @@ class PracticeStateStore {
   static const _kWindow = 'hush.window';
   static const _kLastDay = 'hush.lastDay';
   static const _kTotal = 'hush.total';
+  static const _kDeeperPractice = 'hush.deeperPractice';
   static const _kSchemaVersion = 'hush.schemaVersion';
 
   /// The current storage schema version. Bump this whenever the
@@ -70,11 +94,13 @@ class PracticeStateStore {
     final last = lastIso == null ? null : DateTime.tryParse(lastIso);
     final practiced = last != null && StreakMath.dayKey(last) == StreakMath.today();
     final total = _prefs.getInt(_kTotal) ?? 0;
+    final deeperPractice = _prefs.getBool(_kDeeperPractice) ?? false;
     return PracticeState(
       onboarded: onboarded,
       window: window,
       practicedToday: practiced,
       totalPractices: total,
+      deeperPractice: deeperPractice,
     );
   }
 
@@ -132,8 +158,17 @@ class PracticeStateStore {
     await _prefs.remove(_kWindow);
     await _prefs.remove(_kLastDay);
     await _prefs.remove(_kTotal);
+    await _prefs.remove(_kDeeperPractice);
     // Note: we don't reset the schema version. The next read() will
     // see it at the current version and skip migration. This is
     // correct: a reset is "start over" not "downgrade the schema".
+  }
+
+  /// Set the "deeper practice" mode. When true, opt-in hooks
+  /// (currently: daily notification; future: home widget, lock
+  /// screen) are enabled. The caller is responsible for actually
+  /// wiring the hooks — this method just persists the preference.
+  Future<void> setDeeperPractice(bool enabled) async {
+    await _prefs.setBool(_kDeeperPractice, enabled);
   }
 }

@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'core/notifications/notification_service.dart';
 import 'core/storage/practice_state.dart';
 import 'core/storage/practice_state_provider.dart';
 import 'core/theme/app_theme.dart';
@@ -17,6 +18,17 @@ Future<void> main() async {
     DeviceOrientation.portraitDown,
   ]);
   final store = await PracticeStateStore.open();
+  // Initialize the notification service. This is a no-op if the user
+  // hasn't opted into "deeper practice" — the service just doesn't
+  // schedule anything. We initialize anyway so the platform channel
+  // is ready when the user opts in from settings.
+  await NotificationService.instance.initialize();
+  // If the user previously opted in (before this version), re-schedule
+  // the daily notification with the current window. This handles app
+  // upgrades and the case where the user changed their window.
+  if (store.read().deeperPractice) {
+    await NotificationService.instance.scheduleDaily(store.read().window);
+  }
   runApp(ProviderScope(
     overrides: [practiceStoreProvider.overrideWithValue(store)],
     child: const HushApp(),

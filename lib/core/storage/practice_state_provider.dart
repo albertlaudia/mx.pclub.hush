@@ -32,6 +32,14 @@ class PracticeStateNotifier extends StateNotifier<PracticeState> {
     await _store.reset();
     state = _store.read();
   }
+
+  /// Set the "deeper practice" mode. The caller (settings UI) is
+  /// responsible for wiring the actual hooks — this just persists
+  /// the preference and updates the in-memory state.
+  Future<void> setDeeperPractice(bool enabled) async {
+    await _store.setDeeperPractice(enabled);
+    state = _store.read();
+  }
 }
 
 final practiceStateProvider =
